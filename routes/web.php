@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\GroceryController;
+use App\Http\Controllers\OrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,12 +24,8 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/items', [GroceryController::class, 'index'])->name('items');
 
 // Page 3: Order Now (Implemented in branch-2)
-Route::get('/order', function () {
-    if (view()->exists('order')) {
-        return app(\App\Http\Controllers\OrderController::class)->index(request());
-    }
-    return redirect()->route('items')->with('info', 'Order Now checkout is available in branch-2');
-})->name('order');
+Route::get('/order', [OrderController::class, 'index'])->name('order');
+Route::post('/order/place', [OrderController::class, 'store'])->name('order.store');
 
 // Page 4: Contact Us (Implemented in branch-3)
 Route::get('/contact', function () {
