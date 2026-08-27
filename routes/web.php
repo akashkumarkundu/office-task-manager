@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\GroceryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,19 +20,14 @@ use App\Http\Controllers\HomeController;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Page 2: Grocery Items (Implemented in branch-1)
-Route::get('/items', function () {
-    if (view()->exists('items')) {
-        return app(\App\Http\Controllers\GroceryController::class)->index(request());
-    }
-    return redirect()->route('home')->with('info', 'Grocery Items catalog is available in branch-1');
-})->name('items');
+Route::get('/items', [GroceryController::class, 'index'])->name('items');
 
 // Page 3: Order Now (Implemented in branch-2)
 Route::get('/order', function () {
     if (view()->exists('order')) {
         return app(\App\Http\Controllers\OrderController::class)->index(request());
     }
-    return redirect()->route('home')->with('info', 'Order Now checkout is available in branch-2');
+    return redirect()->route('items')->with('info', 'Order Now checkout is available in branch-2');
 })->name('order');
 
 // Page 4: Contact Us (Implemented in branch-3)
