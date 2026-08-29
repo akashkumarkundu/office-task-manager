@@ -104,7 +104,7 @@
         }
 
         /* Dark Mode Switcher Button */
-        .theme-toggle-btn {
+        .theme-toggle-btn, .device-toggle-btn {
             background: rgba(255, 255, 255, 0.12);
             color: #ffffff;
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -118,9 +118,40 @@
             transition: all 0.25s ease;
         }
 
-        .theme-toggle-btn:hover {
+        .device-toggle-btn {
+            border-radius: 9999px;
+            width: auto;
+            padding: 0 0.85rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .theme-toggle-btn:hover, .device-toggle-btn:hover {
             background: rgba(255, 255, 255, 0.22);
-            transform: rotate(20deg);
+            transform: translateY(-1px);
+        }
+
+        /* Mobile Simulator Container Frame */
+        body.mobile-mode-active #mainContainer {
+            max-width: 414px !important;
+            margin: 1.5rem auto !important;
+            border: 10px solid #1e293b;
+            border-radius: 36px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+            padding: 1.25rem 0.85rem !important;
+            background: var(--bg-body);
+            position: relative;
+            transition: max-width 0.3s ease, padding 0.3s ease;
+        }
+
+        body.mobile-mode-active #mainContainer::before {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 18px;
+            background: #1e293b;
+            border-radius: 0 0 12px 12px;
+            margin: -1.25rem auto 1rem auto;
         }
 
         /* Cards & Surfaces */
@@ -356,8 +387,15 @@
                             <i class="fa-solid fa-plus me-1 text-primary"></i> Create Task
                         </a>
                     </li>
-                    <!-- Dark / Light Mode Toggle Button -->
+                    <!-- Device View Switcher (Desktop / Mobile Simulator) -->
                     <li class="nav-item ms-lg-2">
+                        <button type="button" id="deviceToggle" class="device-toggle-btn" title="Switch between Desktop & Mobile Simulator">
+                            <i class="fa-solid fa-mobile-screen-button me-1" id="deviceIcon"></i>
+                            <span id="deviceText">Mobile View</span>
+                        </button>
+                    </li>
+                    <!-- Dark / Light Mode Toggle Button -->
+                    <li class="nav-item ms-lg-1">
                         <button type="button" id="themeToggle" class="theme-toggle-btn" title="Toggle Dark/Light Mode">
                             <i class="fa-solid fa-moon" id="themeIcon"></i>
                         </button>
@@ -368,7 +406,7 @@
     </nav>
 
     <!-- Main Container -->
-    <main class="container my-4 flex-grow-1">
+    <main class="container my-4 flex-grow-1" id="mainContainer">
         <!-- Flash Messages -->
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm d-flex align-items-center mb-4" role="alert">
@@ -476,6 +514,31 @@
         themeToggle.addEventListener('click', () => {
             const currentTheme = htmlElement.getAttribute('data-bs-theme');
             setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        });
+
+        // Device View Simulator (Desktop / Mobile Switcher)
+        const deviceToggle = document.getElementById('deviceToggle');
+        const deviceIcon = document.getElementById('deviceIcon');
+        const deviceText = document.getElementById('deviceText');
+
+        deviceToggle.addEventListener('click', () => {
+            document.body.classList.toggle('mobile-mode-active');
+            const isMobileActive = document.body.classList.contains('mobile-mode-active');
+
+            if (isMobileActive) {
+                deviceIcon.className = 'fa-solid fa-desktop me-1';
+                deviceText.textContent = 'Desktop View';
+                deviceToggle.classList.add('bg-warning', 'text-dark', 'border-warning');
+            } else {
+                deviceIcon.className = 'fa-solid fa-mobile-screen-button me-1';
+                deviceText.textContent = 'Mobile View';
+                deviceToggle.classList.remove('bg-warning', 'text-dark', 'border-warning');
+            }
+
+            // Force repaint / redraw of charts
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+            }, 300);
         });
 
         // Quick AJAX Status Change
