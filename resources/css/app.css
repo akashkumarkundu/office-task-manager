@@ -61,6 +61,24 @@ select:focus[data-flux-control] {
     @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
 }
 
-/* \[:where(&)\]:size-4 {
-    @apply size-4;
-} */
+/* Screen View Simulator Styles */
+html[data-view-mode="mobile"] main,
+html[data-view-mode="mobile"] [data-flux-main],
+html[data-view-mode="mobile"] flux\:main {
+    max-width: 440px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45) !important;
+    border-radius: 2rem !important;
+    border: 3px solid rgba(120, 120, 120, 0.3) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+html[data-view-mode="desktop"] main,
+html[data-view-mode="desktop"] [data-flux-main],
+html[data-view-mode="desktop"] flux\:main {
+    max-width: 100% !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}

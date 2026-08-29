@@ -354,8 +354,10 @@
         </flux:card>
 
         <!-- Pagination -->
-        <div class="mt-6 mb-12">
+        <div class="mt-6">
             {{ $tasks->links() }}
         </div>
+
+        <x-footer />
     </flux:main>
 </x-layouts::app>

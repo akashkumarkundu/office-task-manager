@@ -462,5 +462,7 @@
                 </flux:card>
             </div>
         @endif
+
+        <x-footer />
     </flux:main>
 </x-layouts::app>

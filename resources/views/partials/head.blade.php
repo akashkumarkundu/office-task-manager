@@ -13,3 +13,16 @@
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 @fluxAppearance
+
+<script>
+    (function() {
+        const savedMode = localStorage.getItem('office_tracker_screen_view') || 'auto';
+        document.documentElement.setAttribute('data-view-mode', savedMode);
+    })();
+
+    window.setScreenViewMode = function(mode) {
+        localStorage.setItem('office_tracker_screen_view', mode);
+        document.documentElement.setAttribute('data-view-mode', mode);
+        window.dispatchEvent(new CustomEvent('viewmodechanged', { detail: { mode: mode } }));
+    };
+</script>

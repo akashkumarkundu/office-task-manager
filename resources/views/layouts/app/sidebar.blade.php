@@ -3,8 +3,8 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-slate-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 antialiased flex flex-col transition-colors duration-300">
-        <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200/80 bg-white/90 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/90 shadow-xs">
+    <body class="min-h-screen bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 antialiased">
+        <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200/80 bg-zinc-50/80 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/90 shadow-xs">
             <flux:sidebar.header class="pb-2">
                 <x-app-logo :sidebar="true" href="{{ route('home') }}" wire:navigate />
                 <flux:sidebar.collapse class="lg:hidden" />
@@ -29,11 +29,9 @@
 
             <flux:spacer />
 
-            <!-- Mode & Preferences Control Group in Sidebar -->
-            <div class="px-3 py-3 border-t border-zinc-100 dark:border-zinc-800/80 rounded-2xl bg-zinc-50/50 dark:bg-zinc-800/40 mb-3">
-                <div class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-2 px-1">
-                    Mode & Density
-                </div>
+            <!-- Mode / Theme Controller in Sidebar -->
+            <div class="px-3 py-2 border-t border-zinc-200/60 dark:border-zinc-800/80 rounded-2xl bg-white dark:bg-zinc-800/40 mb-3 flex items-center justify-between">
+                <span class="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Theme</span>
                 <x-theme-view-controller />
             </div>
 
@@ -51,9 +49,9 @@
             </flux:sidebar.nav>
 
             @auth
-                <x-desktop-user-menu class="hidden lg:block border-t border-zinc-100 dark:border-zinc-800 pt-3" :name="auth()->user()->name" />
+                <x-desktop-user-menu class="hidden lg:block border-t border-zinc-200/60 dark:border-zinc-800 pt-3" :name="auth()->user()->name" />
             @else
-                <div class="hidden lg:flex flex-col gap-2 border-t border-zinc-100 dark:border-zinc-800 pt-3">
+                <div class="hidden lg:flex flex-col gap-2 border-t border-zinc-200/60 dark:border-zinc-800 pt-3">
                     <flux:button href="{{ route('login') }}" variant="subtle" size="sm" icon="arrow-right-end-on-rectangle" class="w-full justify-start">
                         {{ __('Sign In') }}
                     </flux:button>
@@ -66,18 +64,16 @@
             @endauth
         </flux:sidebar>
 
-        <!-- Mobile & Top Header -->
-        <flux:header class="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 px-4 py-2">
-            <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
-
-            <div class="font-bold text-sm text-zinc-900 dark:text-zinc-100 ml-2 hidden sm:block">
-                {{ config('tracker.office_app_name', 'Office Task Tracker') }}
+        <!-- Mobile Header (Only visible on mobile screens) -->
+        <flux:header class="lg:hidden bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
+                <span class="font-bold text-sm text-zinc-900 dark:text-zinc-100">
+                    {{ config('tracker.office_app_name', 'ASTGD Task Tracker') }}
+                </span>
             </div>
 
-            <flux:spacer />
-
-            <!-- Top Header Theme & View Controller -->
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
                 <x-theme-view-controller />
 
                 @auth
@@ -88,29 +84,25 @@
                         />
 
                         <flux:menu>
-                            <flux:menu.radio.group>
-                                <div class="p-0 text-sm font-normal">
-                                    <div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
-                                        <flux:avatar
-                                            :name="auth()->user()->name"
-                                            :initials="auth()->user()->initials()"
-                                        />
+                            <div class="p-0 text-sm font-normal">
+                                <div class="flex items-center gap-2 px-2 py-1.5 text-start text-sm">
+                                    <flux:avatar
+                                        :name="auth()->user()->name"
+                                        :initials="auth()->user()->initials()"
+                                    />
 
-                                        <div class="grid flex-1 text-start text-sm leading-tight">
-                                            <flux:heading class="truncate">{{ auth()->user()->name }}</flux:heading>
-                                            <flux:text class="truncate">{{ auth()->user()->email }}</flux:text>
-                                        </div>
+                                    <div class="grid flex-1 text-start text-sm leading-tight">
+                                        <flux:heading class="truncate">{{ auth()->user()->name }}</flux:heading>
+                                        <flux:text class="truncate">{{ auth()->user()->email }}</flux:text>
                                     </div>
                                 </div>
-                            </flux:menu.radio.group>
+                            </div>
 
                             <flux:menu.separator />
 
-                            <flux:menu.radio.group>
-                                <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
-                                    {{ __('Settings') }}
-                                </flux:menu.item>
-                            </flux:menu.radio.group>
+                            <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
+                                {{ __('Settings') }}
+                            </flux:menu.item>
 
                             <flux:menu.separator />
 
@@ -139,34 +131,8 @@
             </div>
         </flux:header>
 
-        <!-- Main Content Area -->
-        <div class="flex-1">
-            {{ $slot }}
-        </div>
-
-        <!-- Corporate Productivity Footer -->
-        <footer class="mt-auto border-t border-zinc-200/80 bg-white/60 dark:bg-zinc-900/60 dark:border-zinc-800 py-4 px-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
-            <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-                <div class="flex items-center gap-2 flex-wrap">
-                    <span>&copy; {{ date('Y') }} <strong class="font-semibold text-zinc-700 dark:text-zinc-300">{{ config('tracker.company_name', 'ASTGD') }}</strong>. All rights reserved.</span>
-                    <span>&bull;</span>
-                    <a href="mailto:{{ config('tracker.company_email', 'info@astgd.com') }}" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                        {{ config('tracker.company_email', 'info@astgd.com') }}
-                    </a>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="inline-flex items-center gap-1">
-                        <span class="size-2 rounded-full bg-emerald-500"></span>
-                        <span>{{ config('tracker.office_app_name', 'ASTGD Task Tracker') }}</span>
-                    </span>
-                    @if(app()->environment('local'))
-                        <span class="px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800/80 font-mono text-[10px] font-semibold">
-                            Environment: Development
-                        </span>
-                    @endif
-                </div>
-            </div>
-        </footer>
+        <!-- Main Slot -->
+        {{ $slot }}
 
         @persist('toast')
             <flux:toast.group>

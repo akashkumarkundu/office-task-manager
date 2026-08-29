@@ -232,5 +232,7 @@
                 </div>
             </div>
         </div>
+
+        <x-footer />
     </flux:main>
 </x-layouts::app>
