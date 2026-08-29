@@ -21,6 +21,9 @@
                 <a href="{{ route('tasks.edit', $task) }}" class="btn btn-primary btn-sm px-3 py-1 fw-bold rounded-pill">
                     <i class="fa-regular fa-pen-to-square me-1"></i> Edit Task
                 </a>
+                <button type="button" class="btn btn-outline-danger btn-sm px-3 py-1 fw-bold rounded-pill" data-bs-toggle="modal" data-bs-target="#deleteTaskModal">
+                    <i class="fa-regular fa-trash-can me-1"></i> Delete
+                </button>
             </div>
         </div>
 
@@ -224,6 +227,33 @@
                             <i class="fa-regular fa-paper-plane me-1"></i> Post Comment
                         </button>
                     </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true" style="z-index: 2060;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content card-custom text-start" style="background: var(--surface); border: 1px solid var(--border-color); box-shadow: var(--card-shadow);">
+            <div class="modal-header border-bottom border-secondary border-opacity-25">
+                <h5 class="modal-title font-heading text-danger" id="deleteTaskModalLabel">
+                    <i class="fa-solid fa-triangle-exclamation me-2"></i>Delete Task Confirmation
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                Are you sure you want to permanently delete task <strong>"{{ $task->title }}"</strong>? This action cannot be undone.
+            </div>
+            <div class="modal-footer border-top border-secondary border-opacity-25">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ route('tasks.destroy', $task) }}" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">
+                        <i class="fa-solid fa-trash-can me-1"></i> Confirm Delete
+                    </button>
                 </form>
             </div>
         </div>

@@ -258,34 +258,9 @@
                                     <a href="{{ route('tasks.edit', $task) }}" class="btn btn-sm btn-outline-warning rounded-circle" title="Edit task">
                                         <i class="fa-regular fa-pen-to-square"></i>
                                     </a>
-                                    <button type="button" class="btn btn-sm btn-outline-danger rounded-circle" title="Delete task" data-bs-toggle="modal" data-bs-target="#deleteModal{{ $task->id }}">
+                                    <button type="button" class="btn btn-sm btn-outline-danger rounded-circle" title="Delete task" onclick="openDeleteModal({{ $task->id }}, '{{ addslashes($task->title) }}')">
                                         <i class="fa-regular fa-trash-can"></i>
                                     </button>
-                                </div>
-
-                                <!-- Delete Confirmation Modal -->
-                                <div class="modal fade" id="deleteModal{{ $task->id }}" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content card-custom text-start">
-                                            <div class="modal-header border-bottom border-secondary border-opacity-25">
-                                                <h5 class="modal-title font-heading text-danger">
-                                                    <i class="fa-solid fa-triangle-exclamation me-2"></i>Delete Task
-                                                </h5>
-                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body py-4">
-                                                Are you sure you want to permanently delete task <strong>"{{ $task->title }}"</strong>? This action cannot be undone.
-                                            </div>
-                                            <div class="modal-footer border-top border-secondary border-opacity-25">
-                                                <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Cancel</button>
-                                                <form action="{{ route('tasks.destroy', $task) }}" method="POST">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger rounded-3 fw-bold">Confirm Delete</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -381,6 +356,33 @@
     </div>
 </div>
 
+<!-- Global Delete Confirmation Modal -->
+<div class="modal fade" id="globalDeleteModal" tabindex="-1" aria-labelledby="globalDeleteModalLabel" aria-hidden="true" style="z-index: 2060;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content card-custom text-start" style="background: var(--surface); border: 1px solid var(--border-color); box-shadow: var(--card-shadow);">
+            <div class="modal-header border-bottom border-secondary border-opacity-25">
+                <h5 class="modal-title font-heading text-danger" id="globalDeleteModalLabel">
+                    <i class="fa-solid fa-triangle-exclamation me-2"></i>Delete Task Confirmation
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                Are you sure you want to permanently delete task <strong id="deleteModalTaskTitle" class="text-primary"></strong>? This action cannot be undone.
+            </div>
+            <div class="modal-footer border-top border-secondary border-opacity-25">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <form id="globalDeleteForm" action="" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">
+                        <i class="fa-solid fa-trash-can me-1"></i> Confirm Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     // View Switcher Handlers
     const tableViewBtn = document.getElementById('tableViewBtn');
@@ -404,5 +406,14 @@
         tableViewBtn.className = 'btn btn-sm px-3 fw-bold rounded-3 btn-transparent text-muted';
         viewModeInput.value = 'kanban';
     });
+
+    // Global Delete Modal Trigger
+    window.openDeleteModal = function(taskId, taskTitle) {
+        document.getElementById('deleteModalTaskTitle').textContent = `"${taskTitle}"`;
+        document.getElementById('globalDeleteForm').action = `/tasks/${taskId}`;
+        const modalEl = document.getElementById('globalDeleteModal');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+    };
 </script>
 @endsection

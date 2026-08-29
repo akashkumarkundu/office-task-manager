@@ -78,6 +78,12 @@
                             <i class="fa-solid fa-circle-check text-success me-2"></i> Completed
                         </button>
                     </li>
+                    <li><hr class="dropdown-divider my-1 border-secondary opacity-25"></li>
+                    <li>
+                        <button class="dropdown-item small text-danger" onclick="openDeleteModal({{ $task->id }}, '{{ addslashes($task->title) }}')">
+                            <i class="fa-regular fa-trash-can me-2"></i> Delete Task
+                        </button>
+                    </li>
                 </ul>
             </div>
         </div>
