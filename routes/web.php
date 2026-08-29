@@ -1,33 +1,25 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\GroceryController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\ContactController;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes - Daily Groceries in Rajshahi City
+| Web Routes - Office Task Tracker
 |--------------------------------------------------------------------------
 |
-| 1. Home Page: Daily groceries in Rajshahi city (main branch)
-| 2. Grocery Items: Bangladeshi grocery items with photos & BDT prices (branch-1)
-| 3. Order Now: Cart & Bangladeshi payment methods (branch-2)
-| 4. Contact Us: Rajshahi office & support (branch-3)
+| 1. Dashboard: Key metrics, completion rates, due soon alerts, recent tasks
+| 2. Tasks Resource: Full CRUD for task management
+| 3. CSV Export: Export filtered tasks (controlled by ENABLE_TASK_EXPORT)
 |
 */
 
-// Page 1: Home Page
-Route::get('/', [HomeController::class, 'index'])->name('home');
+// Dashboard
+Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-// Page 2: Grocery Items
-Route::get('/items', [GroceryController::class, 'index'])->name('items');
+// CSV Export (Must be placed before resource to prevent conflict with /tasks/{task})
+Route::get('/tasks/export', [TaskController::class, 'export'])->name('tasks.export');
 
-// Page 3: Order Now (Checkout & Bangladeshi Payments)
-Route::get('/order', [OrderController::class, 'index'])->name('order');
-Route::post('/order/place', [OrderController::class, 'store'])->name('order.store');
-
-// Page 4: Contact Us
-Route::get('/contact', [ContactController::class, 'index'])->name('contact');
-Route::post('/contact/send', [ContactController::class, 'store'])->name('contact.store');
+// Tasks CRUD Resource
+Route::resource('tasks', TaskController::class);
