@@ -17,12 +17,17 @@ class Task extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'is_pinned',
         'title',
         'description',
         'assigned_to',
+        'category',
+        'tags',
         'priority',
         'status',
         'due_date',
+        'estimated_hours',
+        'spent_hours',
     ];
 
     /**
@@ -34,6 +39,9 @@ class Task extends Model
     {
         return [
             'due_date' => 'date',
+            'estimated_hours' => 'integer',
+            'spent_hours' => 'float',
+            'is_pinned' => 'boolean',
         ];
     }
 
@@ -54,6 +62,60 @@ class Task extends Model
     }
 
     /**
+     * Parsed Tags array accessor.
+     *
+     * @return array<int, string>
+     */
+    public function getTagsArrayAttribute(): array
+    {
+        if (empty($this->tags)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map('trim', explode(',', $this->tags))));
+    }
+
+    /**
+     * Time budget / spent efficiency percentage.
+     */
+    public function getTimeProgressAttribute(): int
+    {
+        $estimate = (float) ($this->estimated_hours ?: 8);
+        $spent = (float) ($this->spent_hours ?: 0);
+        
+        if ($estimate <= 0) return 0;
+        return (int) min(100, round(($spent / $estimate) * 100));
+    }
+
+    /**
+     * Priority badge class accessor.
+     */
+    public function getPriorityBadgeClassAttribute(): string
+    {
+        return match ($this->priority) {
+            'Urgent' => 'badge-priority-urgent',
+            'High' => 'badge-priority-high',
+            'Medium' => 'badge-priority-medium',
+            'Low' => 'badge-priority-low',
+            default => 'badge-priority-medium',
+        };
+    }
+
+    /**
+     * Priority icon accessor.
+     */
+    public function getPriorityIconAttribute(): string
+    {
+        return match ($this->priority) {
+            'Urgent' => 'fa-solid fa-fire-flame-curved text-danger',
+            'High' => 'fa-solid fa-angles-up text-danger',
+            'Medium' => 'fa-solid fa-equals text-warning',
+            'Low' => 'fa-solid fa-angles-down text-info',
+            default => 'fa-solid fa-circle-dot text-secondary',
+        };
+    }
+
+    /**
      * Calculate Subtask completion percentage.
      */
     public function getSubtaskProgressAttribute(): int
@@ -65,6 +127,29 @@ class Task extends Model
 
         $completed = $this->subtasks->where('is_completed', true)->count();
         return (int) round(($completed / $total) * 100);
+    }
+
+    /**
+     * Formatted Estimated Hours accessor.
+     */
+    public function getFormattedEstimateAttribute(): string
+    {
+        return ($this->estimated_hours ?? 8) . ' hrs';
+    }
+
+    /**
+     * Dynamic Category Styling Badge accessor.
+     */
+    public function getCategoryColorAttribute(): string
+    {
+        return match ($this->category) {
+            'Development', 'Frontend', 'Backend' => 'badge-cat-dev',
+            'DevOps', 'Security', 'Cloud' => 'badge-cat-ops',
+            'Design', 'UI/UX' => 'badge-cat-design',
+            'Finance', 'Accounts' => 'badge-cat-finance',
+            'Marketing', 'Growth' => 'badge-cat-marketing',
+            default => 'badge-cat-general',
+        };
     }
 
     /**
@@ -95,14 +180,16 @@ class Task extends Model
     }
 
     /**
-     * Scope for searching by title or assigned person.
+     * Scope for searching by title, assigned person, category, or tags.
      */
     public function scopeSearch($query, ?string $term)
     {
         if (!empty($term)) {
             $query->where(function ($q) use ($term) {
                 $q->where('title', 'like', "%{$term}%")
-                  ->orWhere('assigned_to', 'like', "%{$term}%");
+                  ->orWhere('assigned_to', 'like', "%{$term}%")
+                  ->orWhere('category', 'like', "%{$term}%")
+                  ->orWhere('tags', 'like', "%{$term}%");
             });
         }
 
@@ -126,11 +213,43 @@ class Task extends Model
      */
     public function scopeFilterPriority($query, ?string $priority)
     {
-        if (!empty($priority) && in_array($priority, ['Low', 'Medium', 'High'])) {
+        if (!empty($priority) && in_array($priority, ['Urgent', 'High', 'Medium', 'Low'])) {
             $query->where('priority', $priority);
         }
 
         return $query;
+    }
+
+    /**
+     * Scope for filtering by category.
+     */
+    public function scopeFilterCategory($query, ?string $category)
+    {
+        if (!empty($category)) {
+            $query->where('category', $category);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Scope for filtering by tag.
+     */
+    public function scopeFilterTag($query, ?string $tag)
+    {
+        if (!empty($tag)) {
+            $query->where('tags', 'like', "%{$tag}%");
+        }
+
+        return $query;
+    }
+
+    /**
+     * Scope for pinned tasks.
+     */
+    public function scopePinned($query)
+    {
+        return $query->where('is_pinned', true);
     }
 
     /**

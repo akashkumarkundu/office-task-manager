@@ -1,348 +1,232 @@
 @extends('layouts.app')
 
-@section('title', 'Task Details: ' . $task->title)
+@section('title', 'Task: ' . $task->title)
 
 @section('content')
 <div class="row justify-content-center">
-    <div class="col-lg-9">
+    <div class="col-lg-10">
         <!-- Breadcrumb & Top Actions -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('tasks.index') }}" class="text-decoration-none">Tasks</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Task #{{ $task->id }}</li>
+                    <li class="breadcrumb-item active text-truncate" style="max-width: 260px;" aria-current="page">{{ $task->title }}</li>
                 </ol>
             </nav>
             <div class="d-flex gap-2">
-                <button type="button" class="btn btn-outline-secondary btn-sm px-3 py-1 fw-semibold" onclick="window.print()">
+                <button type="button" class="btn btn-outline-secondary btn-sm px-3 py-1 fw-bold rounded-pill" onclick="window.print()">
                     <i class="fa-solid fa-print me-1"></i> Print Task Sheet
                 </button>
+                <a href="{{ route('tasks.edit', $task) }}" class="btn btn-primary btn-sm px-3 py-1 fw-bold rounded-pill">
+                    <i class="fa-regular fa-pen-to-square me-1"></i> Edit Task
+                </a>
             </div>
         </div>
 
-        <!-- Main Task Card -->
-        <div class="card card-custom overflow-hidden shadow-sm mb-4" id="printableTaskSheet">
-            <!-- Printable Letterhead Header (Visible only on print or clean view) -->
-            <div class="p-4 p-md-5 border-bottom">
-                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
-                    <div class="d-flex flex-wrap gap-2 align-items-center">
-                        <!-- Priority Badge -->
-                        <span class="badge badge-priority-{{ $task->priority }} px-3 py-2 rounded-pill fw-semibold fs-6">
-                            @if($task->priority == 'High')
-                                <i class="fa-solid fa-fire me-1"></i>
-                            @elseif($task->priority == 'Medium')
-                                <i class="fa-solid fa-minus me-1"></i>
-                            @else
-                                <i class="fa-solid fa-arrow-down me-1"></i>
-                            @endif
-                            {{ $task->priority }} Priority
+        <!-- Main Task Workspace Card -->
+        <div class="card-custom p-4 p-md-5 mb-4 shadow-lg position-relative" style="{{ $task->is_pinned ? 'border-top: 6px solid #f59e0b !important;' : '' }}">
+            <!-- Header Badges Row -->
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4 pb-3 border-bottom border-secondary border-opacity-25">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <!-- Category Badge -->
+                    <span class="badge-cat {{ $task->category_color }} fs-6 px-3 py-2 rounded-pill">
+                        <i class="fa-solid fa-tag me-1"></i> {{ $task->category ?? 'General' }}
+                    </span>
+
+                    <!-- Priority Badge -->
+                    <span class="badge {{ $task->priority_badge_class }} px-3 py-2 rounded-pill fs-6">
+                        <i class="{{ $task->priority_icon }} me-1"></i> {{ $task->priority }} Priority
+                    </span>
+
+                    <!-- Status Pill -->
+                    <span class="status-pill badge-status-{{ str_replace(' ', '', $task->status) }} fs-6 px-3 py-2">
+                        @if($task->status === 'In Progress') <span class="pulse-dot me-1"></span> @endif
+                        {{ $task->status }}
+                    </span>
+
+                    <!-- Overdue or Due Soon Alert -->
+                    @if($task->is_overdue)
+                        <span class="badge bg-danger text-white fs-6 rounded-pill px-3 py-2">
+                            <i class="fa-solid fa-triangle-exclamation me-1"></i> OVERDUE
                         </span>
-
-                        <!-- Status Badge -->
-                        @if($task->status == 'Completed')
-                            <span class="badge badge-status-Completed px-3 py-2 rounded-pill fw-semibold fs-6">
-                                <i class="fa-solid fa-circle-check me-1"></i> Completed
-                            </span>
-                        @elseif($task->status == 'In Progress')
-                            <span class="badge badge-status-InProgress px-3 py-2 rounded-pill fw-semibold fs-6">
-                                <i class="fa-solid fa-spinner me-1"></i> In Progress
-                            </span>
-                        @else
-                            <span class="badge badge-status-Pending px-3 py-2 rounded-pill fw-semibold fs-6">
-                                <i class="fa-regular fa-clock me-1"></i> Pending
-                            </span>
-                        @endif
-
-                        <!-- Overdue or Due Soon Badge -->
-                        @if($task->is_overdue)
-                            <span class="badge badge-overdue fs-6">
-                                <i class="fa-solid fa-triangle-exclamation me-1"></i> OVERDUE
-                            </span>
-                        @elseif($task->is_due_soon)
-                            <span class="badge badge-due-soon fs-6">
-                                <i class="fa-regular fa-clock me-1"></i> Due Soon
-                            </span>
-                        @endif
-                    </div>
-
-                    <div class="text-muted small">
-                        Task Reference: <strong>#TSK-{{ str_pad($task->id, 4, '0', STR_PAD_LEFT) }}</strong>
-                    </div>
-                </div>
-
-                <h2 class="fw-bold mb-3">{{ $task->title }}</h2>
-
-                <!-- Description Block -->
-                <div class="p-3 rounded-3 border mb-4" style="line-height: 1.7; background: rgba(148, 163, 184, 0.08);">
-                    @if($task->description)
-                        {!! nl2br(e($task->description)) !!}
-                    @else
-                        <em class="text-muted">No additional notes or description provided for this task.</em>
+                    @elseif($task->is_due_soon)
+                        <span class="badge bg-warning text-dark fs-6 rounded-pill px-3 py-2">
+                            <i class="fa-regular fa-clock me-1"></i> Due Soon
+                        </span>
                     @endif
                 </div>
 
-                <!-- Metadata Grid -->
-                <div class="row g-3 py-2">
-                    <div class="col-sm-6">
-                        <div class="p-3 border rounded-3 card-custom">
-                            <small class="text-muted text-uppercase fw-bold d-block mb-1">Assigned Person</small>
-                            <div class="d-flex align-items-center">
-                                @php
-                                    $w = explode(' ', trim($task->assigned_to));
-                                    $init = strtoupper(substr($w[0] ?? 'U', 0, 1) . substr($w[1] ?? '', 0, 1));
-                                @endphp
-                                <div class="avatar-circle">
-                                    {{ $init ?: 'U' }}
-                                </div>
-                                <span class="fw-bold fs-6">{{ $task->assigned_to }}</span>
+                <div class="text-muted small font-monospace">
+                    Task Ref: <strong>#TSK-{{ str_pad($task->id, 5, '0', STR_PAD_LEFT) }}</strong>
+                </div>
+            </div>
+
+            <!-- Title -->
+            <h2 class="fw-bold font-heading mb-3">{{ $task->title }}</h2>
+
+            <!-- Tags -->
+            @if(!empty($task->tags))
+                <div class="d-flex flex-wrap gap-1 mb-4">
+                    @foreach($task->tags_array as $tag)
+                        <span class="tag-pill fs-6 px-3 py-1">#{{ $tag }}</span>
+                    @endforeach
+                </div>
+            @endif
+
+            <!-- Description Block -->
+            <div class="p-3 rounded-4 mb-4" style="background: var(--surface-hover); border: 1px solid var(--border-color); line-height: 1.7;">
+                @if($task->description)
+                    {!! nl2br(e($task->description)) !!}
+                @else
+                    <em class="text-muted">No additional description provided.</em>
+                @endif
+            </div>
+
+            <!-- 4-Column Metadata & Stopwatch Grid -->
+            <div class="row g-3 mb-4">
+                <!-- Assignee -->
+                <div class="col-sm-6 col-md-3">
+                    <div class="p-3 rounded-4 card-custom h-100">
+                        <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">Assigned Member</small>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-circle me-2" style="width: 32px; height: 32px;">
+                                {{ substr($task->assigned_to, 0, 1) }}
                             </div>
+                            <span class="fw-bold text-truncate">{{ $task->assigned_to }}</span>
                         </div>
                     </div>
+                </div>
 
-                    <div class="col-sm-6">
-                        <div class="p-3 border rounded-3 card-custom">
-                            <small class="text-muted text-uppercase fw-bold d-block mb-1">Deadline / Due Date</small>
-                            <div class="fw-bold fs-6 d-flex align-items-center">
-                                <i class="fa-regular fa-calendar-days text-primary me-2"></i>
-                                {{ $task->due_date ? $task->due_date->format('F d, Y') : 'N/A' }}
-                                <span class="text-muted small fw-normal ms-2">({{ $task->due_date ? $task->due_date->diffForHumans() : '' }})</span>
-                            </div>
+                <!-- Due Date -->
+                <div class="col-sm-6 col-md-3">
+                    <div class="p-3 rounded-4 card-custom h-100">
+                        <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">Due Date</small>
+                        <div class="fw-bold text-primary">
+                            <i class="fa-regular fa-calendar me-1"></i> {{ $task->due_date ? $task->due_date->format('M d, Y') : 'None' }}
                         </div>
                     </div>
+                </div>
 
-                    <div class="col-sm-6">
-                        <div class="p-3 border rounded-3 card-custom">
-                            <small class="text-muted text-uppercase fw-bold d-block mb-1">Created At</small>
-                            <div class="small">
-                                <i class="fa-regular fa-clock me-1 text-muted"></i>
-                                {{ $task->created_at ? $task->created_at->format('M d, Y h:i A') : 'N/A' }}
-                            </div>
+                <!-- Time Budget -->
+                <div class="col-sm-6 col-md-3">
+                    <div class="p-3 rounded-4 card-custom h-100">
+                        <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">Spent / Estimate</small>
+                        <div class="fw-bold font-monospace text-warning">
+                            {{ $task->spent_hours }}h / {{ $task->estimated_hours ?? 8 }}h
                         </div>
                     </div>
+                </div>
 
-                    <div class="col-sm-6">
-                        <div class="p-3 border rounded-3 card-custom">
-                            <small class="text-muted text-uppercase fw-bold d-block mb-1">Last Updated</small>
-                            <div class="small">
-                                <i class="fa-solid fa-arrows-rotate me-1 text-muted"></i>
-                                {{ $task->updated_at ? $task->updated_at->format('M d, Y h:i A') : 'N/A' }}
-                            </div>
+                <!-- Live Stopwatch Action Widget -->
+                <div class="col-sm-6 col-md-3">
+                    <div class="p-3 rounded-4 card-custom h-100 d-flex flex-column justify-content-center" style="background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.15), rgba(var(--accent-rgb), 0.15)); border: 1px solid var(--primary);">
+                        <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem;">Interactive Stopwatch</small>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <button type="button" class="btn btn-sm btn-primary fw-bold rounded-pill px-3" onclick="startTaskTimer({{ $task->id }}, '{{ addslashes($task->title) }}')">
+                                <i class="fa-solid fa-play me-1"></i> Start
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger fw-bold rounded-pill px-3" onclick="stopAndLogTaskTimer({{ $task->id }})">
+                                <i class="fa-solid fa-stop me-1"></i> Log
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- SUBTASKS / CHECKLIST SECTION -->
-            <div class="p-4 p-md-5 border-bottom bg-body-tertiary">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0">
-                        <i class="fa-solid fa-list-check text-primary me-2"></i>Subtasks & Checklist
-                    </h5>
-                    <span class="badge bg-primary rounded-pill px-3 py-1" id="subtaskCounter">
-                        {{ $task->subtasks->where('is_completed', true)->count() }} / {{ $task->subtasks->count() }} Completed
-                    </span>
+            <!-- Subtasks Checklist Section -->
+            <div class="card-custom p-4 mb-4">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-1 font-heading">
+                            <i class="fa-solid fa-list-check text-primary me-2"></i> Subtasks & Deliverables Checklist
+                        </h5>
+                        <p class="text-muted small mb-0">{{ $task->subtasks->where('is_completed', true)->count() }} of {{ $task->subtasks->count() }} items completed ({{ $task->subtask_progress }}%)</p>
+                    </div>
+                    <span class="badge bg-primary rounded-pill px-3 py-2">{{ $task->subtask_progress }}%</span>
                 </div>
 
-                <!-- Subtask Progress Bar -->
-                <div class="progress mb-4" style="height: 8px; border-radius: 9999px;">
-                    <div class="progress-bar bg-primary progress-bar-striped" id="subtaskProgressBar" 
-                         role="progressbar" 
-                         style="width: {{ $task->subtask_progress }}%;" 
-                         aria-valuenow="{{ $task->subtask_progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                <!-- Progress Bar -->
+                <div class="progress mb-3" style="height: 8px; background: var(--surface-hover);">
+                    <div class="progress-bar" style="width: {{ $task->subtask_progress }}%; background: linear-gradient(90deg, var(--primary), var(--accent));"></div>
                 </div>
 
-                <!-- Subtasks Items List -->
-                <div class="list-group mb-3" id="subtasksList">
+                <!-- Subtasks List -->
+                <div class="list-group list-group-flush mb-3">
                     @forelse($task->subtasks as $subtask)
-                        <div class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 card-custom border mb-2 rounded-3">
-                            <div class="form-check d-flex align-items-center mb-0">
-                                <input class="form-check-input me-2 subtask-toggle" type="checkbox" 
-                                       data-subtask-id="{{ $subtask->id }}" 
-                                       id="subtaskCheck{{ $subtask->id }}"
-                                       {{ $subtask->is_completed ? 'checked' : '' }}
-                                       style="width: 1.2rem; height: 1.2rem; cursor: pointer;">
-                                <label class="form-check-label {{ $subtask->is_completed ? 'text-decoration-line-through text-muted' : 'fw-medium' }}" 
-                                       for="subtaskCheck{{ $subtask->id }}" 
-                                       id="subtaskLabel{{ $subtask->id }}"
-                                       style="cursor: pointer;">
-                                    {{ $subtask->title }}
-                                </label>
-                            </div>
-                            <form action="{{ route('subtasks.destroy', $subtask) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm text-danger opacity-75 hover-opacity-100 p-0" title="Delete subtask">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
-                            </form>
-                        </div>
+                    <div class="list-group-item px-0 py-2 bg-transparent border-secondary border-opacity-25 d-flex align-items-center justify-content-between">
+                        <form action="{{ route('subtasks.toggle', $subtask) }}" method="POST" class="d-flex align-items-center gap-2 flex-grow-1">
+                            @csrf
+                            @method('PATCH')
+                            <input class="form-check-input mt-0" type="checkbox" onchange="this.form.submit()" {{ $subtask->is_completed ? 'checked' : '' }} style="cursor: pointer; width: 20px; height: 20px;">
+                            <span class="{{ $subtask->is_completed ? 'text-decoration-line-through text-muted' : 'fw-semibold' }}">
+                                {{ $subtask->title }}
+                            </span>
+                        </form>
+                        <form action="{{ route('subtasks.destroy', $subtask) }}" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm text-danger" title="Delete subtask"><i class="fa-regular fa-trash-can"></i></button>
+                        </form>
+                    </div>
                     @empty
-                        <div class="text-center py-3 text-muted small" id="noSubtasksText">
-                            <i class="fa-regular fa-square-check me-1"></i> No checklist items yet. Add subtasks below to track detailed progress!
-                        </div>
+                    <div class="text-muted small py-2">No subtasks added yet. Add checklist items below.</div>
                     @endforelse
                 </div>
 
-                <!-- Add Subtask Inline Form -->
+                <!-- Add Subtask Form -->
                 <form action="{{ route('subtasks.store', $task) }}" method="POST" class="d-flex gap-2">
                     @csrf
-                    <input type="text" name="title" class="form-control" placeholder="+ Add a new subtask / checklist item..." required>
-                    <button type="submit" class="btn btn-outline-primary fw-semibold px-4">Add</button>
+                    <input type="text" name="title" class="form-control" placeholder="Add a new checklist step..." required style="background: var(--surface); color: var(--text-main); border-color: var(--border-color); border-radius: 12px;">
+                    <button type="submit" class="btn btn-primary fw-bold px-4" style="border-radius: 12px;">Add</button>
                 </form>
             </div>
 
-            <!-- COMMENTS & DISCUSSION THREAD -->
-            <div class="p-4 p-md-5 border-bottom">
-                <h5 class="fw-bold mb-3">
-                    <i class="fa-regular fa-comments text-primary me-2"></i>Task Discussion & Activity Notes
+            <!-- Task Discussion Comments Section -->
+            <div class="card-custom p-4">
+                <h5 class="fw-bold mb-3 font-heading">
+                    <i class="fa-solid fa-comments text-accent me-2"></i> Team Discussion & Activity Log ({{ $task->comments->count() }})
                 </h5>
 
-                <!-- Comments List -->
-                <div class="mb-4">
+                <!-- Comments Feed -->
+                <div class="d-flex flex-column gap-3 mb-4">
                     @forelse($task->comments as $comment)
-                        <div class="d-flex mb-3 align-items-start">
-                            @php
-                                $w = explode(' ', trim($comment->user_name));
-                                $cInit = strtoupper(substr($w[0] ?? 'U', 0, 1) . substr($w[1] ?? '', 0, 1));
-                            @endphp
-                            <div class="avatar-circle mt-1" style="width:34px;height:34px;font-size:0.75rem;">{{ $cInit ?: 'U' }}</div>
-                            <div class="p-3 rounded-3 card-custom border flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <strong class="fs-6">{{ $comment->user_name }}</strong>
-                                    <small class="text-muted">{{ $comment->created_at->diffForHumans() }}</small>
+                    <div class="p-3 rounded-4" style="background: var(--surface-hover); border: 1px solid var(--border-color);">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="avatar-circle" style="width: 26px; height: 26px; font-size: 0.7rem;">
+                                    {{ substr($comment->user_name, 0, 1) }}
                                 </div>
-                                <p class="mb-0 text-body" style="line-height: 1.5;">{{ $comment->comment }}</p>
+                                <span class="fw-bold">{{ $comment->user_name }}</span>
                             </div>
+                            <small class="text-muted">{{ $comment->created_at ? $comment->created_at->diffForHumans() : 'Recently' }}</small>
                         </div>
+                        <p class="mb-0 text-body small" style="line-height: 1.6;">{{ $comment->comment }}</p>
+                    </div>
                     @empty
-                        <div class="text-center py-3 text-muted small">
-                            <i class="fa-regular fa-comment-dots me-1"></i> No comments yet. Post the first update or question below.
-                        </div>
+                    <div class="text-muted small text-center py-3">No comments posted yet. Start the conversation below.</div>
                     @endforelse
                 </div>
 
                 <!-- Add Comment Form -->
-                <form action="{{ route('tasks.comments.store', $task) }}" method="POST" class="card-custom p-3 border rounded-3">
+                <form action="{{ route('tasks.comments.store', $task) }}" method="POST">
                     @csrf
                     <div class="row g-2 mb-2">
-                        <div class="col-md-5">
-                            <input type="text" name="user_name" class="form-control form-control-sm" placeholder="Your Name (e.g. Emon Ahmed)" required>
+                        <div class="col-md-4">
+                            <input type="text" name="user_name" class="form-control" placeholder="Your name (e.g. Emon Ahmed)" value="Emon Ahmed" required style="background: var(--surface); color: var(--text-main); border-color: var(--border-color); border-radius: 10px;">
+                        </div>
+                        <div class="col-md-8">
+                            <input type="text" name="comment" class="form-control" placeholder="Write a note, update, or blocker..." required style="background: var(--surface); color: var(--text-main); border-color: var(--border-color); border-radius: 10px;">
                         </div>
                     </div>
-                    <div class="mb-2">
-                        <textarea name="comment" rows="2" class="form-control" placeholder="Write a note, update, or feedback on this task..." required></textarea>
-                    </div>
                     <div class="text-end">
-                        <button type="submit" class="btn btn-primary btn-sm px-4 fw-semibold shadow-sm">
-                            <i class="fa-solid fa-paper-plane me-1"></i> Post Comment
+                        <button type="submit" class="btn btn-primary btn-sm px-4 fw-bold rounded-pill">
+                            <i class="fa-regular fa-paper-plane me-1"></i> Post Comment
                         </button>
                     </div>
                 </form>
             </div>
-
-            <!-- Card Actions -->
-            <div class="card-footer bg-transparent p-4 d-flex justify-content-between align-items-center">
-                <a href="{{ route('tasks.index') }}" class="btn btn-outline-secondary px-3 py-2 fw-semibold">
-                    <i class="fa-solid fa-arrow-left me-1"></i> Back to Tasks
-                </a>
-
-                <div class="d-flex gap-2">
-                    <a href="{{ route('tasks.edit', $task) }}" class="btn btn-primary px-3 py-2 fw-semibold shadow-sm">
-                        <i class="fa-solid fa-pen-to-square me-1"></i> Edit Task
-                    </a>
-                    <button type="button" class="btn btn-outline-danger px-3 py-2 fw-semibold" 
-                            data-bs-toggle="modal" 
-                            data-bs-target="#deleteModal">
-                        <i class="fa-solid fa-trash-can me-1"></i> Delete
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 </div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content card-custom border-0 shadow">
-            <div class="modal-header bg-danger text-white border-0 py-3">
-                <h5 class="modal-title fw-bold" id="deleteModalLabel">
-                    <i class="fa-solid fa-triangle-exclamation me-2"></i> Confirm Task Deletion
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4 text-center">
-                <div class="mb-3 text-danger fs-1">
-                    <i class="fa-solid fa-trash-can"></i>
-                </div>
-                <h5 class="fw-bold mb-2">Are you sure you want to delete this task?</h5>
-                <p class="text-muted mb-0">"{{ $task->title }}"</p>
-                <div class="alert alert-warning small text-start mt-3 mb-0">
-                    <i class="fa-solid fa-circle-info me-1"></i> This action is permanent and cannot be undone.
-                </div>
-            </div>
-            <div class="modal-footer border-0 bg-transparent p-3 justify-content-center gap-2">
-                <button type="button" class="btn btn-secondary px-4 fw-semibold" data-bs-dismiss="modal">Cancel</button>
-                <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger px-4 fw-semibold shadow-sm">
-                        <i class="fa-solid fa-trash-can me-1"></i> Yes, Delete Task
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- AJAX Subtask Toggle Script -->
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        
-        document.querySelectorAll('.subtask-toggle').forEach(checkbox => {
-            checkbox.addEventListener('change', async function() {
-                const subtaskId = this.dataset.subtaskId;
-                const isChecked = this.checked;
-                const label = document.getElementById('subtaskLabel' + subtaskId);
-
-                try {
-                    const response = await fetch(`/subtasks/${subtaskId}/toggle`, {
-                        method: 'PATCH',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': csrf,
-                            'Accept': 'application/json'
-                        }
-                    });
-
-                    const data = await response.json();
-                    if (data.success) {
-                        if (data.is_completed) {
-                            label.classList.add('text-decoration-line-through', 'text-muted');
-                            label.classList.remove('fw-medium');
-                        } else {
-                            label.classList.remove('text-decoration-line-through', 'text-muted');
-                            label.classList.add('fw-medium');
-                        }
-
-                        // Update progress bar
-                        const progressBar = document.getElementById('subtaskProgressBar');
-                        if (progressBar) {
-                            progressBar.style.width = data.progress + '%';
-                            progressBar.setAttribute('aria-valuenow', data.progress);
-                        }
-
-                        if (data.progress === 100) {
-                            triggerConfetti();
-                        }
-                    }
-                } catch (e) {
-                    console.error('Subtask toggle failed', e);
-                }
-            });
-        });
-    });
-</script>
 @endsection

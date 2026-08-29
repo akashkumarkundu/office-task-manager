@@ -31,13 +31,21 @@ class TaskFactory extends Factory
             'David Miller',
         ];
 
+        $categories = ['Development', 'UI/UX Design', 'DevOps', 'QA Testing', 'Marketing', 'Finance', 'Security', 'Research'];
+        $tagsPool = ['Frontend', 'Backend', 'API', 'Bug', 'Urgent', 'Release-v2', 'Optimization', 'Security', 'Client'];
+
         return [
+            'is_pinned' => fake()->boolean(20),
             'title' => fake()->sentence(4),
             'description' => fake()->paragraph(2),
             'assigned_to' => fake()->randomElement($teamMembers),
-            'priority' => fake()->randomElement(['Low', 'Medium', 'High']),
+            'category' => fake()->randomElement($categories),
+            'tags' => implode(', ', fake()->randomElements($tagsPool, rand(1, 3))),
+            'priority' => fake()->randomElement(['Low', 'Medium', 'High', 'Urgent']),
             'status' => fake()->randomElement(['Pending', 'In Progress', 'Completed']),
             'due_date' => fake()->dateTimeBetween('-10 days', '+15 days')->format('Y-m-d'),
+            'estimated_hours' => fake()->numberBetween(4, 40),
+            'spent_hours' => fake()->randomFloat(1, 0, 35),
         ];
     }
 }

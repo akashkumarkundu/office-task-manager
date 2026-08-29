@@ -28,6 +28,15 @@ Route::get('/tasks/export', [TaskController::class, 'export'])->name('tasks.expo
 // Quick Status Update (AJAX & Kanban)
 Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.update-status');
 
+// Toggle Pin Status (AJAX)
+Route::patch('/tasks/{task}/toggle-pin', [TaskController::class, 'togglePin'])->name('tasks.toggle-pin');
+
+// Log Spent Time from Live Stopwatch (AJAX)
+Route::post('/tasks/{task}/log-time', [TaskController::class, 'logTime'])->name('tasks.log-time');
+
+// Command Palette Quick Search (JSON for Ctrl+K)
+Route::get('/api/quick-search', [TaskController::class, 'quickSearch'])->name('tasks.quick-search');
+
 // Subtasks Checklist Routes
 Route::post('/tasks/{task}/subtasks', [SubtaskController::class, 'store'])->name('subtasks.store');
 Route::patch('/subtasks/{subtask}/toggle', [SubtaskController::class, 'toggle'])->name('subtasks.toggle');

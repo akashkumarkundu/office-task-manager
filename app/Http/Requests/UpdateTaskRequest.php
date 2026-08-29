@@ -25,9 +25,14 @@ class UpdateTaskRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:2000'],
             'assigned_to' => ['required', 'string', 'max:255'],
-            'priority' => ['required', 'in:Low,Medium,High'],
+            'category' => ['nullable', 'string', 'max:100'],
+            'tags' => ['nullable', 'string', 'max:255'],
+            'priority' => ['required', 'in:Low,Medium,High,Urgent'],
             'status' => ['required', 'in:Pending,In Progress,Completed'],
             'due_date' => ['required', 'date'],
+            'estimated_hours' => ['nullable', 'integer', 'min:1', 'max:1000'],
+            'spent_hours' => ['nullable', 'numeric', 'min:0', 'max:9999'],
+            'is_pinned' => ['nullable', 'boolean'],
         ];
     }
 
@@ -42,7 +47,7 @@ class UpdateTaskRequest extends FormRequest
             'title.required' => 'Task title is required.',
             'assigned_to.required' => 'Please select or enter the person responsible for this task.',
             'priority.required' => 'Priority is required.',
-            'priority.in' => 'Priority must be Low, Medium, or High.',
+            'priority.in' => 'Priority must be Low, Medium, High, or Urgent.',
             'status.required' => 'Status is required.',
             'status.in' => 'Status must be Pending, In Progress, or Completed.',
             'due_date.required' => 'Due date is required.',

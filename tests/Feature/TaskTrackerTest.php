@@ -269,4 +269,96 @@ class TaskTrackerTest extends TestCase
             'comment' => 'This is a test discussion update.',
         ]);
     }
+
+    /**
+     * Test pinning and unpinning task.
+     */
+    public function test_can_toggle_pin_status(): void
+    {
+        $task = Task::create([
+            'title' => 'Important Task',
+            'assigned_to' => 'Emon',
+            'priority' => 'Urgent',
+            'status' => 'Pending',
+            'due_date' => Carbon::tomorrow(),
+            'is_pinned' => false,
+        ]);
+
+        $response = $this->patchJson(route('tasks.toggle-pin', $task));
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true, 'is_pinned' => true]);
+
+        $this->assertDatabaseHas('tasks', ['id' => $task->id, 'is_pinned' => true]);
+    }
+
+    /**
+     * Test logging worked time from stopwatch.
+     */
+    public function test_can_log_time_from_live_stopwatch(): void
+    {
+        $task = Task::create([
+            'title' => 'Time Log Task',
+            'assigned_to' => 'Emon',
+            'priority' => 'High',
+            'status' => 'In Progress',
+            'due_date' => Carbon::tomorrow(),
+            'estimated_hours' => 10,
+            'spent_hours' => 2.0,
+        ]);
+
+        // Log 90 minutes (1.5 hours)
+        $response = $this->postJson(route('tasks.log-time', $task), [
+            'minutes' => 90,
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true, 'spent_hours' => 3.5]);
+
+        $this->assertDatabaseHas('tasks', ['id' => $task->id, 'spent_hours' => 3.5]);
+    }
+
+    /**
+     * Test quick search for Ctrl+K command palette.
+     */
+    public function test_can_quick_search_for_command_palette(): void
+    {
+        $task = Task::create([
+            'title' => 'Kubernetes Setup',
+            'assigned_to' => 'Rakib',
+            'category' => 'DevOps',
+            'priority' => 'Urgent',
+            'status' => 'Pending',
+            'due_date' => Carbon::tomorrow(),
+        ]);
+
+        $response = $this->getJson(route('tasks.quick-search', ['q' => 'Kubernetes']));
+        $response->assertStatus(200);
+        $response->assertJsonFragment(['title' => 'Kubernetes Setup', 'category' => 'DevOps']);
+    }
+
+    /**
+     * Test creating an Urgent task with tags.
+     */
+    public function test_can_create_urgent_task_with_tags(): void
+    {
+        $response = $this->post(route('tasks.store'), [
+            'title' => 'Critical Payment Failure',
+            'description' => 'Gateway returning 500 error',
+            'assigned_to' => 'Tanvir Hasan',
+            'category' => 'Backend',
+            'tags' => 'Payment, Bug, Urgent',
+            'priority' => 'Urgent',
+            'status' => 'In Progress',
+            'due_date' => Carbon::tomorrow()->format('Y-m-d'),
+            'estimated_hours' => 12,
+            'is_pinned' => 1,
+        ]);
+
+        $response->assertRedirect(route('tasks.index'));
+        $this->assertDatabaseHas('tasks', [
+            'title' => 'Critical Payment Failure',
+            'priority' => 'Urgent',
+            'is_pinned' => true,
+        ]);
+    }
 }
