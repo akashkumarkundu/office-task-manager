@@ -176,4 +176,33 @@ class TaskTrackerTest extends TestCase
         $responseDisabled = $this->get(route('tasks.export'));
         $responseDisabled->assertStatus(403);
     }
+
+    /**
+     * Test quick status update (AJAX / Kanban).
+     */
+    public function test_can_update_task_status_via_quick_action(): void
+    {
+        $task = Task::create([
+            'title' => 'Quick Status Task',
+            'assigned_to' => 'Emon Ahmed',
+            'priority' => 'High',
+            'status' => 'Pending',
+            'due_date' => Carbon::tomorrow(),
+        ]);
+
+        $response = $this->patchJson(route('tasks.update-status', $task), [
+            'status' => 'Completed',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'status' => 'Completed',
+        ]);
+
+        $this->assertDatabaseHas('tasks', [
+            'id' => $task->id,
+            'status' => 'Completed',
+        ]);
+    }
 }

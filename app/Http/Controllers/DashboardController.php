@@ -17,6 +17,8 @@ class DashboardController extends Controller
         $pendingTasks = Task::where('status', 'Pending')->count();
         $inProgressTasks = Task::where('status', 'In Progress')->count();
         $completedTasks = Task::where('status', 'Completed')->count();
+        $lowPriorityTasks = Task::where('priority', 'Low')->count();
+        $mediumPriorityTasks = Task::where('priority', 'Medium')->count();
         $highPriorityTasks = Task::where('priority', 'High')->count();
 
         // Bonus Metrics
@@ -36,6 +38,8 @@ class DashboardController extends Controller
             'pendingTasks',
             'inProgressTasks',
             'completedTasks',
+            'lowPriorityTasks',
+            'mediumPriorityTasks',
             'highPriorityTasks',
             'completionPercentage',
             'overdueCount',

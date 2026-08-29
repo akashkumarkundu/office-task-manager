@@ -16,7 +16,7 @@
 
         <div class="card card-custom overflow-hidden shadow-sm mb-4">
             <!-- Header with Badges -->
-            <div class="p-4 p-md-5 border-bottom bg-white">
+            <div class="p-4 p-md-5 border-bottom">
                 <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
                     <div class="d-flex flex-wrap gap-2 align-items-center">
                         <!-- Priority Badge -->
@@ -63,35 +63,39 @@
                     </div>
                 </div>
 
-                <h2 class="fw-bold text-dark mb-3">{{ $task->title }}</h2>
+                <h2 class="fw-bold mb-3">{{ $task->title }}</h2>
 
                 <!-- Description Block -->
-                <div class="p-3 bg-light rounded-3 border text-secondary mb-4" style="line-height: 1.7;">
+                <div class="p-3 rounded-3 border mb-4" style="line-height: 1.7; background: rgba(148, 163, 184, 0.08);">
                     @if($task->description)
                         {!! nl2br(e($task->description)) !!}
                     @else
-                        <em>No additional notes or description provided for this task.</em>
+                        <em class="text-muted">No additional notes or description provided for this task.</em>
                     @endif
                 </div>
 
                 <!-- Metadata Grid -->
                 <div class="row g-3 py-2">
                     <div class="col-sm-6">
-                        <div class="p-3 border rounded-3 bg-white">
+                        <div class="p-3 border rounded-3 card-custom">
                             <small class="text-muted text-uppercase fw-bold d-block mb-1">Assigned Person</small>
                             <div class="d-flex align-items-center">
+                                @php
+                                    $w = explode(' ', trim($task->assigned_to));
+                                    $init = strtoupper(substr($w[0] ?? 'U', 0, 1) . substr($w[1] ?? '', 0, 1));
+                                @endphp
                                 <div class="avatar-circle">
-                                    {{ strtoupper(substr($task->assigned_to, 0, 1)) }}
+                                    {{ $init ?: 'U' }}
                                 </div>
-                                <span class="fw-bold text-dark fs-6">{{ $task->assigned_to }}</span>
+                                <span class="fw-bold fs-6">{{ $task->assigned_to }}</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="col-sm-6">
-                        <div class="p-3 border rounded-3 bg-white">
+                        <div class="p-3 border rounded-3 card-custom">
                             <small class="text-muted text-uppercase fw-bold d-block mb-1">Deadline / Due Date</small>
-                            <div class="fw-bold text-dark fs-6 d-flex align-items-center">
+                            <div class="fw-bold fs-6 d-flex align-items-center">
                                 <i class="fa-regular fa-calendar-days text-primary me-2"></i>
                                 {{ $task->due_date ? $task->due_date->format('F d, Y') : 'N/A' }}
                                 <span class="text-muted small fw-normal ms-2">({{ $task->due_date ? $task->due_date->diffForHumans() : '' }})</span>
@@ -100,9 +104,9 @@
                     </div>
 
                     <div class="col-sm-6">
-                        <div class="p-3 border rounded-3 bg-white">
+                        <div class="p-3 border rounded-3 card-custom">
                             <small class="text-muted text-uppercase fw-bold d-block mb-1">Created At</small>
-                            <div class="text-dark small">
+                            <div class="small">
                                 <i class="fa-regular fa-clock me-1 text-muted"></i>
                                 {{ $task->created_at ? $task->created_at->format('M d, Y h:i A') : 'N/A' }}
                             </div>
@@ -110,9 +114,9 @@
                     </div>
 
                     <div class="col-sm-6">
-                        <div class="p-3 border rounded-3 bg-white">
+                        <div class="p-3 border rounded-3 card-custom">
                             <small class="text-muted text-uppercase fw-bold d-block mb-1">Last Updated</small>
-                            <div class="text-dark small">
+                            <div class="small">
                                 <i class="fa-solid fa-arrows-rotate me-1 text-muted"></i>
                                 {{ $task->updated_at ? $task->updated_at->format('M d, Y h:i A') : 'N/A' }}
                             </div>
@@ -122,7 +126,7 @@
             </div>
 
             <!-- Card Actions -->
-            <div class="card-footer bg-light p-4 d-flex justify-content-between align-items-center">
+            <div class="card-footer bg-transparent p-4 d-flex justify-content-between align-items-center">
                 <a href="{{ route('tasks.index') }}" class="btn btn-outline-secondary px-3 py-2 fw-semibold">
                     <i class="fa-solid fa-arrow-left me-1"></i> Back to Tasks
                 </a>
@@ -145,7 +149,7 @@
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
+        <div class="modal-content card-custom border-0 shadow">
             <div class="modal-header bg-danger text-white border-0 py-3">
                 <h5 class="modal-title fw-bold" id="deleteModalLabel">
                     <i class="fa-solid fa-triangle-exclamation me-2"></i> Confirm Task Deletion
@@ -162,7 +166,7 @@
                     <i class="fa-solid fa-circle-info me-1"></i> This action is permanent and cannot be undone.
                 </div>
             </div>
-            <div class="modal-footer border-0 bg-light p-3 justify-content-center gap-2">
+            <div class="modal-footer border-0 bg-transparent p-3 justify-content-center gap-2">
                 <button type="button" class="btn btn-secondary px-4 fw-semibold" data-bs-dismiss="modal">Cancel</button>
                 <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline">
                     @csrf

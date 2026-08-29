@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>@yield('title', config('office.app_name', 'Office Task Tracker')) - {{ config('office.company_name', 'Zenith Core Ltd.') }}</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', config('office.app_name', 'Office Task Tracker')) - {{ config('office.company_name', 'Emon Tech Solutions Ltd.') }}</title>
     
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,6 +18,10 @@
     <!-- FontAwesome 6 Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+    <!-- Chart.js & Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
     <style>
         :root {
             --primary: #4f46e5;
@@ -27,6 +32,23 @@
             --border-color: #e2e8f0;
             --text-main: #0f172a;
             --text-muted: #64748b;
+            --card-bg: #ffffff;
+            --card-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            --table-hover: #f1f5f9;
+        }
+
+        [data-bs-theme="dark"] {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #312e81;
+            --surface: #1e293b;
+            --background: #0f172a;
+            --border-color: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --card-bg: #1e293b;
+            --card-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            --table-hover: #293548;
         }
 
         body {
@@ -36,13 +58,15 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* Navbar Styling */
         .navbar-custom {
-            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
             padding: 0.85rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .navbar-brand {
@@ -51,7 +75,7 @@
             color: #ffffff !important;
             display: flex;
             align-items: center;
-            gap: 0.6rem;
+            gap: 0.65rem;
         }
 
         .brand-icon {
@@ -63,11 +87,11 @@
             align-items: center;
             justify-content: center;
             color: white;
-            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.35);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
         }
 
         .nav-link {
-            color: rgba(255, 255, 255, 0.8) !important;
+            color: rgba(255, 255, 255, 0.85) !important;
             font-weight: 500;
             padding: 0.5rem 0.9rem !important;
             border-radius: 8px;
@@ -76,21 +100,41 @@
 
         .nav-link:hover, .nav-link.active {
             color: #ffffff !important;
-            background-color: rgba(255, 255, 255, 0.12);
+            background-color: rgba(255, 255, 255, 0.14);
+        }
+
+        /* Dark Mode Switcher Button */
+        .theme-toggle-btn {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .theme-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.22);
+            transform: rotate(20deg);
         }
 
         /* Cards & Surfaces */
         .card-custom {
-            background: var(--surface);
+            background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 6px 16px rgba(0,0,0,0.02);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
         }
 
         .card-custom-interactive:hover {
             transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.08);
         }
 
         /* Stats Cards */
@@ -101,11 +145,18 @@
             position: relative;
             overflow: hidden;
             border: none;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 28px rgba(0,0,0,0.18);
         }
 
         .stat-card .stat-icon {
             position: absolute;
-            right: 1.25rem;
+            right: 1.15rem;
             top: 50%;
             transform: translateY(-50%);
             font-size: 2.75rem;
@@ -137,9 +188,17 @@
         .badge-priority-Medium { background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
         .badge-priority-Low { background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
 
+        [data-bs-theme="dark"] .badge-priority-High { background-color: #450a0a; color: #fca5a5; border-color: #7f1d1d; }
+        [data-bs-theme="dark"] .badge-priority-Medium { background-color: #451a03; color: #fcd34d; border-color: #78350f; }
+        [data-bs-theme="dark"] .badge-priority-Low { background-color: #1e293b; color: #cbd5e1; border-color: #334155; }
+
         .badge-status-Pending { background-color: #ffedd5; color: #c2410c; }
         .badge-status-InProgress { background-color: #e0f2fe; color: #0369a1; }
         .badge-status-Completed { background-color: #dcfce7; color: #15803d; }
+
+        [data-bs-theme="dark"] .badge-status-Pending { background-color: #431407; color: #fdba74; }
+        [data-bs-theme="dark"] .badge-status-InProgress { background-color: #082f49; color: #7dd3fc; }
+        [data-bs-theme="dark"] .badge-status-Completed { background-color: #052e16; color: #86efac; }
 
         .badge-overdue {
             background: linear-gradient(135deg, #ef4444, #dc2626);
@@ -158,18 +217,23 @@
             border-radius: 6px;
         }
 
+        [data-bs-theme="dark"] .badge-due-soon {
+            background-color: #713f12;
+            color: #fef08a;
+        }
+
         @keyframes pulse-red {
             0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
             70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
 
-        /* Avatar Circle */
+        /* Avatar Circle with Colorful Gradients */
         .avatar-circle {
-            width: 32px;
-            height: 32px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            background: linear-gradient(135deg, #6366f1, #a855f7);
             color: white;
             display: inline-flex;
             align-items: center;
@@ -177,12 +241,56 @@
             font-size: 0.8rem;
             font-weight: 700;
             margin-right: 0.5rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            flex-shrink: 0;
+        }
+
+        /* Quick Status Select */
+        .status-select-sm {
+            padding: 0.25rem 0.65rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background-color: var(--surface);
+            color: var(--text-main);
+            transition: all 0.2s ease;
+        }
+
+        .status-select-sm:hover {
+            border-color: var(--primary);
+        }
+
+        /* Kanban Styles */
+        .kanban-col {
+            background-color: var(--background);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1rem;
+            min-height: 480px;
+        }
+
+        .kanban-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.85rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            cursor: grab;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .kanban-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
         }
 
         /* Footer */
         footer {
             margin-top: auto;
-            background-color: #0f172a;
+            background-color: #0b0f19;
             color: #94a3b8;
             padding: 1.5rem 0;
             font-size: 0.875rem;
@@ -190,7 +298,7 @@
         }
 
         .env-badge {
-            background-color: #334155;
+            background-color: #1e293b;
             color: #38bdf8;
             font-weight: 600;
             padding: 0.25rem 0.65rem;
@@ -222,7 +330,7 @@
                 <div>
                     <div>{{ config('office.app_name', 'Office Task Tracker') }}</div>
                     <small style="font-size: 0.72rem; color: #a5b4fc; font-weight: 500; display: block; line-height: 1;">
-                        {{ config('office.company_name', 'Zenith Core Ltd.') }}
+                        {{ config('office.company_name', 'Emon Tech Solutions Ltd.') }}
                     </small>
                 </div>
             </a>
@@ -248,59 +356,53 @@
                             <i class="fa-solid fa-plus me-1 text-primary"></i> Create Task
                         </a>
                     </li>
+                    <!-- Dark / Light Mode Toggle Button -->
+                    <li class="nav-item ms-lg-2">
+                        <button type="button" id="themeToggle" class="theme-toggle-btn" title="Toggle Dark/Light Mode">
+                            <i class="fa-solid fa-moon" id="themeIcon"></i>
+                        </button>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
 
     <!-- Main Container -->
-    <main class="py-4 flex-grow-1">
-        <div class="container">
-            <!-- Flash Message: Success -->
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4 mb-4 d-flex align-items-center" role="alert">
-                    <div class="me-3 fs-4 text-success">
-                        <i class="fa-solid fa-circle-check"></i>
-                    </div>
-                    <div class="flex-grow-1">
-                        <strong>Success!</strong> {{ session('success') }}
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
+    <main class="container my-4 flex-grow-1">
+        <!-- Flash Messages -->
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm d-flex align-items-center mb-4" role="alert">
+                <i class="fa-solid fa-circle-check fs-5 me-2"></i>
+                <div class="flex-grow-1 fw-medium">{{ session('success') }}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
 
-            <!-- Flash Message: Error -->
-            @if(session('error'))
-                <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-4 mb-4 d-flex align-items-center" role="alert">
-                    <div class="me-3 fs-4 text-danger">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                    </div>
-                    <div class="flex-grow-1">
-                        <strong>Error!</strong> {{ session('error') }}
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm d-flex align-items-center mb-4" role="alert">
+                <i class="fa-solid fa-triangle-exclamation fs-5 me-2"></i>
+                <div class="flex-grow-1 fw-medium">{{ session('error') }}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
 
-            <!-- Validation Errors Summary (if any) -->
-            @if ($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-4 mb-4" role="alert">
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="fa-solid fa-circle-exclamation me-2 fs-5"></i>
-                        <strong class="fs-6">Please correct the following errors:</strong>
-                    </div>
-                    <ul class="mb-0 ps-3">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
+                <div class="d-flex align-items-center mb-1">
+                    <i class="fa-solid fa-circle-exclamation fs-5 me-2"></i>
+                    <strong>Please correct the errors below:</strong>
                 </div>
-            @endif
+                <ul class="mb-0 ps-4">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
 
-            <!-- Page Content -->
-            @yield('content')
-        </div>
+        <!-- Dynamic Page Content -->
+        @yield('content')
     </main>
 
     <!-- Footer -->
@@ -309,22 +411,20 @@
             <div class="row align-items-center gy-3">
                 <div class="col-md-6 text-center text-md-start">
                     <div class="fw-bold text-white mb-1">
-                        {{ config('office.company_name', 'Zenith Core Ltd.') }} &copy; {{ date('Y') }}
+                        {{ config('office.company_name', 'Emon Tech Solutions Ltd.') }} &copy; {{ date('Y') }}
                     </div>
-                    <div class="text-muted small">
-                        Support Contact: <a href="mailto:{{ config('office.company_email', 'support@zenithcore.com') }}" class="text-info text-decoration-none">{{ config('office.company_email', 'support@zenithcore.com') }}</a>
-                    </div>
+                    <small>Support: <a href="mailto:{{ config('office.company_email', 'contact@emontech.com') }}" class="text-decoration-none text-info">{{ config('office.company_email', 'contact@emontech.com') }}</a></small>
                 </div>
                 <div class="col-md-6 text-center text-md-end">
                     @if(app()->environment('local'))
                         <span class="env-badge">
                             <span class="env-dot"></span>
-                            Environment: <strong>Development (Local)</strong>
+                            Environment: Development
                         </span>
                     @else
                         <span class="env-badge">
                             <span class="env-dot" style="background-color: #38bdf8;"></span>
-                            Environment: <strong>{{ ucfirst(app()->environment()) }}</strong>
+                            Environment: Production
                         </span>
                     @endif
                 </div>
@@ -334,6 +434,83 @@
 
     <!-- Bootstrap 5.3 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    @yield('scripts')
+
+    <!-- Dark/Light Theme & Confetti Scripts -->
+    <script>
+        // Confetti Celebration Helper
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#6366f1', '#10b981', '#f59e0b', '#ec4899']
+                });
+            }
+        }
+
+        // Theme Switcher Logic
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const htmlElement = document.documentElement;
+
+        function setTheme(theme) {
+            htmlElement.setAttribute('data-bs-theme', theme);
+            localStorage.setItem('office_theme', theme);
+            if (theme === 'dark') {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            } else {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            }
+            // Trigger custom event for charts to redraw if needed
+            window.dispatchEvent(new Event('themeChanged'));
+        }
+
+        // Check local storage or system preference
+        const savedTheme = localStorage.getItem('office_theme') || 
+            (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        setTheme(savedTheme);
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-bs-theme');
+            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        });
+
+        // Quick AJAX Status Change
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.quick-status-dropdown').forEach(select => {
+                select.addEventListener('change', async function() {
+                    const taskId = this.dataset.taskId;
+                    const newStatus = this.value;
+                    const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                    try {
+                        const response = await fetch(`/tasks/${taskId}/status`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrf,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ status: newStatus })
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            if (newStatus === 'Completed') {
+                                triggerConfetti();
+                            }
+                            // Optional: reload after short delay or update row badge
+                            setTimeout(() => window.location.reload(), 400);
+                        }
+                    } catch (e) {
+                        console.error('Status update failed', e);
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

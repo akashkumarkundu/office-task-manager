@@ -177,4 +177,27 @@ class TaskController extends Controller
             fclose($file);
         }, 200, $headers);
     }
+
+    /**
+     * Update only the status of the task (AJAX / Quick Action).
+     */
+    public function updateStatus(Request $request, Task $task)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:Pending,In Progress,Completed',
+        ]);
+
+        $task->update(['status' => $validated['status']]);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Status updated successfully!',
+                'status' => $task->status,
+                'is_overdue' => $task->is_overdue,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Task status updated to ' . $task->status);
+    }
 }

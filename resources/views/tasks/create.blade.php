@@ -20,7 +20,7 @@
                     <i class="fa-solid fa-plus"></i>
                 </div>
                 <div>
-                    <h3 class="fw-bold mb-0 text-dark">Create New Task</h3>
+                    <h3 class="fw-bold mb-0">Create New Task</h3>
                     <p class="text-muted small mb-0">Fill in the assignment details to assign and track a new task.</p>
                 </div>
             </div>
@@ -30,7 +30,7 @@
 
                 <!-- Task Title -->
                 <div class="mb-3">
-                    <label for="title" class="form-label fw-semibold text-dark">
+                    <label for="title" class="form-label fw-semibold">
                         Task Title <span class="text-danger">*</span>
                     </label>
                     <input type="text" 
@@ -47,7 +47,7 @@
 
                 <!-- Description -->
                 <div class="mb-3">
-                    <label for="description" class="form-label fw-semibold text-dark">
+                    <label for="description" class="form-label fw-semibold">
                         Description / Notes
                     </label>
                     <textarea class="form-control @error('description') is-invalid @enderror" 
@@ -63,11 +63,11 @@
                 <div class="row g-3 mb-3">
                     <!-- Assigned To -->
                     <div class="col-md-6">
-                        <label for="assigned_to" class="form-label fw-semibold text-dark">
+                        <label for="assigned_to" class="form-label fw-semibold">
                             Assigned To <span class="text-danger">*</span>
                         </label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light text-muted"><i class="fa-solid fa-user"></i></span>
+                            <span class="input-group-text bg-transparent text-muted"><i class="fa-solid fa-user"></i></span>
                             <input type="text" 
                                    class="form-control @error('assigned_to') is-invalid @enderror" 
                                    id="assigned_to" 
@@ -83,11 +83,11 @@
 
                     <!-- Due Date -->
                     <div class="col-md-6">
-                        <label for="due_date" class="form-label fw-semibold text-dark">
+                        <label for="due_date" class="form-label fw-semibold">
                             Due Date <span class="text-danger">*</span>
                         </label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light text-muted"><i class="fa-solid fa-calendar-days"></i></span>
+                            <span class="input-group-text bg-transparent text-muted"><i class="fa-solid fa-calendar-days"></i></span>
                             <input type="date" 
                                    class="form-control @error('due_date') is-invalid @enderror" 
                                    id="due_date" 
@@ -104,7 +104,7 @@
                 <div class="row g-3 mb-4">
                     <!-- Priority -->
                     <div class="col-md-6">
-                        <label for="priority" class="form-label fw-semibold text-dark">
+                        <label for="priority" class="form-label fw-semibold">
                             Priority <span class="text-danger">*</span>
                         </label>
                         <select class="form-select @error('priority') is-invalid @enderror" id="priority" name="priority" required>
@@ -119,7 +119,7 @@
 
                     <!-- Status -->
                     <div class="col-md-6">
-                        <label for="status" class="form-label fw-semibold text-dark">
+                        <label for="status" class="form-label fw-semibold">
                             Status <span class="text-danger">*</span>
                         </label>
                         <select class="form-select @error('status') is-invalid @enderror" id="status" name="status" required>
