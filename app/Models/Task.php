@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Task extends Model
 {
@@ -34,6 +35,36 @@ class Task extends Model
         return [
             'due_date' => 'date',
         ];
+    }
+
+    /**
+     * Subtasks relationship.
+     */
+    public function subtasks(): HasMany
+    {
+        return $this->hasMany(Subtask::class)->orderBy('id', 'asc');
+    }
+
+    /**
+     * Comments relationship.
+     */
+    public function comments(): HasMany
+    {
+        return $this->hasMany(TaskComment::class)->latest();
+    }
+
+    /**
+     * Calculate Subtask completion percentage.
+     */
+    public function getSubtaskProgressAttribute(): int
+    {
+        $total = $this->subtasks->count();
+        if ($total === 0) {
+            return 0;
+        }
+
+        $completed = $this->subtasks->where('is_completed', true)->count();
+        return (int) round(($completed / $total) * 100);
     }
 
     /**

@@ -112,8 +112,29 @@ class TaskSeeder extends Seeder
             ],
         ];
 
-        foreach ($sampleTasks as $task) {
-            Task::create($task);
+        foreach ($sampleTasks as $index => $taskData) {
+            $task = Task::create($taskData);
+
+            // Add sample subtasks for first 4 tasks
+            if ($index === 0) {
+                $task->subtasks()->createMany([
+                    ['title' => 'Draft modern hero layout in Tailwind/Bootstrap', 'is_completed' => true],
+                    ['title' => 'Integrate customer testimonials slider', 'is_completed' => true],
+                    ['title' => 'Review mobile responsiveness on iOS & Android', 'is_completed' => false],
+                    ['title' => 'Publish to production server', 'is_completed' => false],
+                ]);
+
+                $task->comments()->createMany([
+                    ['user_name' => 'Emon Ahmed', 'comment' => 'Completed the hero banner redesign, working on mobile responsiveness now.'],
+                    ['user_name' => 'Sarah Jenkins', 'comment' => 'Looks super clean! Make sure the CTA buttons have proper contrast in dark mode.'],
+                ]);
+            } elseif ($index === 1) {
+                $task->subtasks()->createMany([
+                    ['title' => 'Gather vendor invoices from finance inbox', 'is_completed' => true],
+                    ['title' => 'Calculate operational expenses & depreciation', 'is_completed' => false],
+                    ['title' => 'Export final summary spreadsheet', 'is_completed' => false],
+                ]);
+            }
         }
     }
 }

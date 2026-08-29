@@ -205,4 +205,68 @@ class TaskTrackerTest extends TestCase
             'status' => 'Completed',
         ]);
     }
+
+    /**
+     * Test subtask creation and toggle.
+     */
+    public function test_can_add_and_toggle_subtasks(): void
+    {
+        $task = Task::create([
+            'title' => 'Parent Task',
+            'assigned_to' => 'Emon',
+            'priority' => 'Medium',
+            'status' => 'Pending',
+            'due_date' => Carbon::tomorrow(),
+        ]);
+
+        // Add subtask
+        $response = $this->post(route('subtasks.store', $task), [
+            'title' => 'First subtask item',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('subtasks', [
+            'task_id' => $task->id,
+            'title' => 'First subtask item',
+            'is_completed' => false,
+        ]);
+
+        $subtask = $task->subtasks()->first();
+
+        // Toggle subtask
+        $toggleResponse = $this->patchJson(route('subtasks.toggle', $subtask));
+        $toggleResponse->assertStatus(200);
+        $toggleResponse->assertJson(['is_completed' => true]);
+
+        $this->assertDatabaseHas('subtasks', [
+            'id' => $subtask->id,
+            'is_completed' => true,
+        ]);
+    }
+
+    /**
+     * Test task discussion comments.
+     */
+    public function test_can_post_task_comment(): void
+    {
+        $task = Task::create([
+            'title' => 'Task for discussion',
+            'assigned_to' => 'Emon',
+            'priority' => 'High',
+            'status' => 'Pending',
+            'due_date' => Carbon::tomorrow(),
+        ]);
+
+        $response = $this->post(route('tasks.comments.store', $task), [
+            'user_name' => 'Emon Ahmed',
+            'comment' => 'This is a test discussion update.',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('task_comments', [
+            'task_id' => $task->id,
+            'user_name' => 'Emon Ahmed',
+            'comment' => 'This is a test discussion update.',
+        ]);
+    }
 }
