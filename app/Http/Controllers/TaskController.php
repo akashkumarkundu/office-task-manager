@@ -224,6 +224,9 @@ class TaskController extends Controller
 
         return response()->stream(function () use ($tasks) {
             $handle = fopen('php://output', 'w');
+            if ($handle === false) {
+                return;
+            }
 
             // UTF-8 BOM for Excel compatibility
             fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
@@ -251,7 +254,7 @@ class TaskController extends Controller
                     $task->status,
                     $task->due_date ? Carbon::parse($task->due_date)->format('Y-m-d') : 'N/A',
                     $task->is_overdue ? 'YES' : 'NO',
-                    $task->created_at->format('Y-m-d H:i:s'),
+                    $task->created_at ? $task->created_at->format('Y-m-d H:i:s') : 'N/A',
                 ]);
             }
 
