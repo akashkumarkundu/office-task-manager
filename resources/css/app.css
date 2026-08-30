@@ -91,14 +91,15 @@ select:focus[data-flux-control] {
     }
 }
 
-html[data-view-mode="desktop"] body {
-    min-width: 1200px !important;
-    overflow-x: auto !important;
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
+html[data-view-mode="desktop"],
+html[data-view-mode="desktop"] body,
+html[data-view-mode="auto"],
 html[data-view-mode="auto"] body {
-    width: 100% !important;
     max-width: 100% !important;
-    min-width: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background-color: transparent;
 }
