@@ -61,24 +61,44 @@ select:focus[data-flux-control] {
     @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
 }
 
-/* Screen View Simulator Styles */
-html[data-view-mode="mobile"] main,
-html[data-view-mode="mobile"] [data-flux-main],
-html[data-view-mode="mobile"] flux\:main {
-    max-width: 440px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45) !important;
-    border-radius: 2rem !important;
-    border: 3px solid rgba(120, 120, 120, 0.3) !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+/* Screen View Simulator Styles (Mobile / Desktop / Auto) */
+@media (min-width: 640px) {
+    html[data-view-mode="mobile"] {
+        background-color: #090d16 !important;
+        padding: 24px 0 !important;
+        overflow-y: auto !important;
+    }
+
+    html[data-view-mode="mobile"] body {
+        max-width: 430px !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        min-height: calc(100vh - 48px) !important;
+        border-radius: 40px !important;
+        border: 10px solid #1e293b !important;
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 25px 60px -15px rgba(0, 0, 0, 0.9) !important;
+        overflow-x: hidden !important;
+        position: relative !important;
+        transition: max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s ease !important;
+    }
+
+    html[data-view-mode="mobile"] header.sticky {
+        position: sticky !important;
+        top: 0 !important;
+        width: 100% !important;
+        border-top-left-radius: 28px !important;
+        border-top-right-radius: 28px !important;
+    }
 }
 
-html[data-view-mode="desktop"] main,
-html[data-view-mode="desktop"] [data-flux-main],
-html[data-view-mode="desktop"] flux\:main {
+html[data-view-mode="desktop"] body {
+    min-width: 1200px !important;
+    overflow-x: auto !important;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+html[data-view-mode="auto"] body {
+    width: 100% !important;
     max-width: 100% !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    min-width: 0 !important;
 }

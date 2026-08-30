@@ -57,9 +57,9 @@
         <section class="relative overflow-hidden pt-16 pb-20 sm:pt-24 sm:pb-24 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
             <!-- Background Real Corporate Boardroom Image & Multi-layer Adaptive Dark/Light Overlay -->
             <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-                <img src="{{ asset('images/hero-office-bg.jpg') }}" alt="ASTGD Boardroom Background" class="w-full h-full object-cover object-center opacity-35 dark:opacity-65 brightness-105 dark:brightness-90 scale-100 transition-opacity duration-500" />
-                <div class="absolute inset-0 bg-gradient-to-b from-slate-50/95 via-slate-50/75 to-slate-50 dark:from-slate-950/75 dark:via-slate-950/55 dark:to-slate-950/95 transition-colors duration-300"></div>
-                <div class="absolute inset-0 bg-radial from-transparent via-slate-50/40 to-slate-50 dark:via-slate-950/40 dark:to-slate-950 transition-colors duration-300"></div>
+                <img src="{{ asset('images/hero-office-bg.jpg') }}" alt="ASTGD Boardroom Background" class="w-full h-full object-cover object-center opacity-80 dark:opacity-65 brightness-100 dark:brightness-90 contrast-105 scale-100 transition-all duration-500" />
+                <div class="absolute inset-0 bg-gradient-to-b from-white/75 via-slate-50/55 to-slate-100/95 dark:from-slate-950/75 dark:via-slate-950/55 dark:to-slate-950/95 transition-colors duration-300"></div>
+                <div class="absolute inset-0 bg-slate-900/5 dark:bg-transparent transition-colors duration-300"></div>
             </div>
 
             <!-- Ambient Glow Spheres (Blue & Red Ambiance) -->
