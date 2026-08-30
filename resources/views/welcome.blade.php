@@ -52,9 +52,8 @@
         <section class="relative overflow-hidden pt-16 pb-20 sm:pt-24 sm:pb-24 bg-slate-950">
             <!-- Background Real Corporate Boardroom Image & Multi-layer Gradient Dark Overlay -->
             <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-                <img src="{{ asset('images/hero-office-bg.jpg') }}" alt="ASTGD Boardroom Background" class="w-full h-full object-cover object-center opacity-25 brightness-75 scale-105" />
-                <div class="absolute inset-0 bg-gradient-to-b from-slate-950/95 via-slate-950/80 to-slate-950"></div>
-                <div class="absolute inset-0 bg-radial from-transparent via-slate-950/60 to-slate-950"></div>
+                <img src="{{ asset('images/hero-office-bg.jpg') }}" alt="ASTGD Boardroom Background" class="w-full h-full object-cover object-center opacity-65 brightness-90 scale-100" />
+                <div class="absolute inset-0 bg-gradient-to-b from-slate-950/75 via-slate-950/55 to-slate-950/95"></div>
             </div>
 
             <!-- Ambient Glow Spheres (Blue & Red Ambiance) -->
