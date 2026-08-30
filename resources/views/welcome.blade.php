@@ -48,11 +48,32 @@
             </div>
         </header>
 
-        <!-- 2. Hero Section -->
-        <section class="relative overflow-hidden pt-16 pb-20 sm:pt-24 sm:pb-28">
-            <!-- Decorative Glow Elements (Blue & Red Ambiance) -->
-            <div class="absolute -top-40 left-1/2 -translate-x-1/2 size-[700px] bg-gradient-to-tr from-blue-600/30 via-blue-700/20 to-red-600/30 rounded-full blur-[150px] pointer-events-none"></div>
-            <div class="absolute top-1/3 right-10 size-96 bg-red-600/15 rounded-full blur-[130px] pointer-events-none"></div>
+        <!-- 2. Hero Section with Real Corporate Boardroom Background & Tech Overlays -->
+        <section class="relative overflow-hidden pt-16 pb-20 sm:pt-24 sm:pb-24 bg-slate-950">
+            <!-- Background Real Corporate Boardroom Image & Multi-layer Gradient Dark Overlay -->
+            <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                <img src="{{ asset('images/hero-office-bg.jpg') }}" alt="ASTGD Boardroom Background" class="w-full h-full object-cover object-center opacity-25 brightness-75 scale-105" />
+                <div class="absolute inset-0 bg-gradient-to-b from-slate-950/95 via-slate-950/80 to-slate-950"></div>
+                <div class="absolute inset-0 bg-radial from-transparent via-slate-950/60 to-slate-950"></div>
+            </div>
+
+            <!-- Ambient Glow Spheres (Blue & Red Ambiance) -->
+            <div class="absolute -top-40 left-1/2 -translate-x-1/2 size-[750px] bg-gradient-to-tr from-blue-600/25 via-blue-700/15 to-red-600/25 rounded-full blur-[160px] pointer-events-none z-0"></div>
+            <div class="absolute top-1/3 right-10 size-96 bg-red-600/15 rounded-full blur-[140px] pointer-events-none z-0"></div>
+
+            <!-- Floating Subtle Tech Icons (Matching ASTGD Corporate Style) -->
+            <div class="absolute top-16 left-6 sm:left-16 opacity-15 pointer-events-none z-0 hidden md:block">
+                <flux:icon name="globe-alt" class="size-24 text-blue-400" />
+            </div>
+            <div class="absolute top-16 right-6 sm:right-16 opacity-15 pointer-events-none z-0 hidden md:block">
+                <flux:icon name="code-bracket" class="size-24 text-red-400" />
+            </div>
+            <div class="absolute bottom-36 left-8 sm:left-24 opacity-15 pointer-events-none z-0 hidden lg:block">
+                <flux:icon name="envelope" class="size-20 text-blue-300" />
+            </div>
+            <div class="absolute bottom-36 right-8 sm:right-24 opacity-15 pointer-events-none z-0 hidden lg:block">
+                <flux:icon name="squares-plus" class="size-20 text-red-300" />
+            </div>
 
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
                 <!-- Pill Badge -->
@@ -76,28 +97,97 @@
                     <flux:button href="{{ route('dashboard') }}" variant="primary" icon="squares-2x2" class="w-full sm:w-auto py-3.5 px-8 font-extrabold text-base bg-gradient-to-r from-blue-600 via-blue-700 to-red-600 hover:from-blue-700 hover:to-red-700 hover:scale-105 transition-all shadow-xl shadow-red-600/30 border-0">
                         Go to Dashboard
                     </flux:button>
-                    <flux:button href="{{ route('tasks.index') }}" variant="subtle" icon="clipboard-document-list" class="w-full sm:w-auto py-3.5 px-8 font-bold text-base bg-slate-900/90 hover:bg-slate-800 border border-blue-500/50 text-blue-200 shadow-md">
+                    <flux:button href="{{ route('tasks.index') }}" variant="subtle" icon="clipboard-document-list" class="w-full sm:w-auto py-3.5 px-8 font-bold text-base bg-slate-900/90 hover:bg-slate-800 border border-blue-500/50 text-blue-200 shadow-md backdrop-blur-md">
                         Explore Task Management
                     </flux:button>
                 </div>
 
                 <!-- Real-time Live Metric Banner (Blue & Red Theme) -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-                    <div class="p-4 rounded-2xl bg-slate-900/80 border border-blue-500/30 backdrop-blur-md shadow-md">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto mb-14">
+                    <div class="p-4 rounded-2xl bg-slate-900/85 border border-blue-500/30 backdrop-blur-md shadow-md hover:border-blue-400 transition-colors">
                         <div class="text-2xl sm:text-3xl font-black text-blue-400">{{ $totalTasks }}</div>
                         <div class="text-xs text-zinc-400 font-semibold mt-0.5">Total System Tasks</div>
                     </div>
-                    <div class="p-4 rounded-2xl bg-slate-900/80 border border-red-500/30 backdrop-blur-md shadow-md">
+                    <div class="p-4 rounded-2xl bg-slate-900/85 border border-red-500/30 backdrop-blur-md shadow-md hover:border-red-400 transition-colors">
                         <div class="text-2xl sm:text-3xl font-black text-red-500">{{ $pendingTasks }}</div>
                         <div class="text-xs text-zinc-400 font-semibold mt-0.5">Pending Action</div>
                     </div>
-                    <div class="p-4 rounded-2xl bg-slate-900/80 border border-blue-500/30 backdrop-blur-md shadow-md">
+                    <div class="p-4 rounded-2xl bg-slate-900/85 border border-blue-500/30 backdrop-blur-md shadow-md hover:border-blue-400 transition-colors">
                         <div class="text-2xl sm:text-3xl font-black text-blue-400">{{ $inProgressTasks }}</div>
                         <div class="text-xs text-zinc-400 font-semibold mt-0.5">In Production</div>
                     </div>
-                    <div class="p-4 rounded-2xl bg-slate-900/80 border border-red-500/30 backdrop-blur-md shadow-md">
+                    <div class="p-4 rounded-2xl bg-slate-900/85 border border-red-500/30 backdrop-blur-md shadow-md hover:border-red-400 transition-colors">
                         <div class="text-2xl sm:text-3xl font-black text-red-400">{{ $completionPercentage }}%</div>
                         <div class="text-xs text-zinc-400 font-semibold mt-0.5">Completion Rate</div>
+                    </div>
+                </div>
+
+                <!-- Corporate Trust & Accreditation Credentials Bar (Matching user reference) -->
+                <div class="pt-8 border-t border-zinc-800/80 max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs text-zinc-400">
+                    <!-- BASIS Registration -->
+                    <div class="flex items-center gap-2.5">
+                        <div class="size-7 rounded-lg bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white font-black text-xs shadow-xs">
+                            ▲
+                        </div>
+                        <div class="text-left">
+                            <span class="text-[10px] text-zinc-500 block uppercase tracking-wider font-semibold">BASIS Registration No</span>
+                            <strong class="text-zinc-200 font-black text-xs sm:text-sm">GE-18-11-670</strong>
+                        </div>
+                    </div>
+
+                    <div class="h-6 w-px bg-zinc-800 hidden sm:block"></div>
+
+                    <!-- D.U.N.S Number -->
+                    <div class="flex items-center gap-2.5">
+                        <div class="size-7 rounded-lg bg-blue-600 flex items-center justify-center text-white font-black text-xs shadow-xs">
+                            &
+                        </div>
+                        <div class="text-left">
+                            <span class="text-[10px] text-zinc-500 block uppercase tracking-wider font-semibold">D.U.N.S Number</span>
+                            <strong class="text-zinc-200 font-black text-xs sm:text-sm">55-965-0301</strong>
+                        </div>
+                    </div>
+
+                    <div class="h-6 w-px bg-zinc-800 hidden sm:block"></div>
+
+                    <!-- Trustpilot -->
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-emerald-400 font-bold text-base">★</span>
+                        <div class="text-left">
+                            <span class="font-bold text-white text-xs block">Trustpilot</span>
+                            <div class="flex items-center gap-1 text-[11px] text-emerald-400">
+                                <span>★★★★★</span>
+                                <span class="text-zinc-300 font-bold">4.3</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="h-6 w-px bg-zinc-800 hidden sm:block"></div>
+
+                    <!-- SCAMADVISER -->
+                    <div class="flex items-center gap-2.5">
+                        <span class="size-5 rounded-full bg-red-600 text-white flex items-center justify-center text-[10px] font-black">✔</span>
+                        <div class="text-left">
+                            <span class="font-bold text-white text-xs block">SCAMADVISER</span>
+                            <div class="flex items-center gap-1 text-[11px] text-red-500">
+                                <span>★★★★★</span>
+                                <span class="text-zinc-300 font-bold">5.0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="h-6 w-px bg-zinc-800 hidden sm:block"></div>
+
+                    <!-- G2 -->
+                    <div class="flex items-center gap-2.5">
+                        <span class="size-6 rounded-md bg-orange-600 text-white flex items-center justify-center text-xs font-black">G</span>
+                        <div class="text-left">
+                            <span class="font-bold text-white text-xs block">G2</span>
+                            <div class="flex items-center gap-1 text-[11px] text-orange-500">
+                                <span>★★★★★</span>
+                                <span class="text-zinc-300 font-bold">5.0</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
