@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Task;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -17,7 +19,7 @@ class TaskController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = Task::query();
+        $query = Task::with(['items', 'assignedUser']);
 
         // 1. Advanced search by title or assigned person
         if ($request->filled('search')) {
@@ -41,6 +43,12 @@ class TaskController extends Controller
                     ->whereDate('due_date', '<=', Carbon::today()->addDays(3));
             } elseif ($request->filter === 'high_priority') {
                 $query->where('priority', 'High');
+            } elseif ($request->filter === 'my_tasks' && $request->user()) {
+                $user = $request->user();
+                $query->where(function ($q) use ($user) {
+                    $q->where('assigned_user_id', $user->id)
+                        ->orWhere('assigned_to', $user->name);
+                });
             }
         }
 
@@ -54,7 +62,12 @@ class TaskController extends Controller
             $query->where('priority', $request->priority);
         }
 
-        // 5. Sorting
+        // 5. Filter by Category / Department
+        if ($request->filled('category') && $request->category !== 'All') {
+            $query->where('category', $request->category);
+        }
+
+        // 6. Sorting
         $sortBy = $request->get('sort', 'due_date_asc');
         switch ($sortBy) {
             case 'due_date_desc':
@@ -87,23 +100,34 @@ class TaskController extends Controller
      */
     public function kanban(): View
     {
-        $pendingTasks = Task::where('status', 'Pending')->orderBy('due_date', 'asc')->get();
-        $inProgressTasks = Task::where('status', 'In Progress')->orderBy('due_date', 'asc')->get();
-        $completedTasks = Task::where('status', 'Completed')->orderBy('due_date', 'asc')->get();
+        $pendingTasks = Task::with(['items', 'assignedUser'])->where('status', 'Pending')->orderBy('due_date', 'asc')->get();
+        $inProgressTasks = Task::with(['items', 'assignedUser'])->where('status', 'In Progress')->orderBy('due_date', 'asc')->get();
+        $completedTasks = Task::with(['items', 'assignedUser'])->where('status', 'Completed')->orderBy('due_date', 'asc')->get();
 
         return view('tasks.kanban', compact('pendingTasks', 'inProgressTasks', 'completedTasks'));
     }
 
     /**
-     * Quickly update task workflow status.
+     * Quickly update task workflow status (Supports AJAX drag-and-drop & Form Submit).
      */
-    public function updateStatus(Request $request, Task $task): RedirectResponse
+    public function updateStatus(Request $request, Task $task): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'status' => ['required', Rule::in(['Pending', 'In Progress', 'Completed'])],
         ]);
 
         $task->update(['status' => $validated['status']]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Task \"{$task->title}\" moved to {$validated['status']}.",
+                'status' => $validated['status'],
+                'pending_count' => Task::where('status', 'Pending')->count(),
+                'in_progress_count' => Task::where('status', 'In Progress')->count(),
+                'completed_count' => Task::where('status', 'Completed')->count(),
+            ]);
+        }
 
         return back()->with('success', "Task \"{$task->title}\" transitioned to {$validated['status']}.");
     }
@@ -113,7 +137,10 @@ class TaskController extends Controller
      */
     public function create(): View
     {
-        return view('tasks.create');
+        $users = User::orderBy('name')->get();
+        $categories = ['Development', 'Design', 'Marketing', 'Operations', 'Finance', 'Management', 'Other'];
+
+        return view('tasks.create', compact('users', 'categories'));
     }
 
     /**
@@ -125,7 +152,9 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:2000',
             'assigned_to' => 'required|string|max:255',
+            'assigned_user_id' => 'nullable|exists:users,id',
             'priority' => ['required', Rule::in(['Low', 'Medium', 'High'])],
+            'category' => 'nullable|string|max:50',
             'status' => ['required', Rule::in(['Pending', 'In Progress', 'Completed'])],
             'due_date' => 'required|date',
         ], [
@@ -140,6 +169,18 @@ class TaskController extends Controller
             'due_date.date' => 'Please provide a valid date for the deadline.',
             'description.max' => 'Description cannot exceed 2,000 characters.',
         ]);
+
+        if (empty($validated['category'])) {
+            $validated['category'] = 'Operations';
+        }
+
+        // If assigned_user_id was picked and assigned_to is standard/empty, sync with user's name
+        if (! empty($validated['assigned_user_id'])) {
+            $assignedUser = User::find($validated['assigned_user_id']);
+            if ($assignedUser) {
+                $validated['assigned_to'] = $assignedUser->name;
+            }
+        }
 
         Task::create($validated);
 
@@ -151,6 +192,8 @@ class TaskController extends Controller
      */
     public function show(Task $task): View
     {
+        $task->load(['items', 'comments.user', 'assignedUser']);
+
         return view('tasks.show', compact('task'));
     }
 
@@ -159,7 +202,10 @@ class TaskController extends Controller
      */
     public function edit(Task $task): View
     {
-        return view('tasks.edit', compact('task'));
+        $users = User::orderBy('name')->get();
+        $categories = ['Development', 'Design', 'Marketing', 'Operations', 'Finance', 'Management', 'Other'];
+
+        return view('tasks.edit', compact('task', 'users', 'categories'));
     }
 
     /**
@@ -171,7 +217,9 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:2000',
             'assigned_to' => 'required|string|max:255',
+            'assigned_user_id' => 'nullable|exists:users,id',
             'priority' => ['required', Rule::in(['Low', 'Medium', 'High'])],
+            'category' => 'nullable|string|max:50',
             'status' => ['required', Rule::in(['Pending', 'In Progress', 'Completed'])],
             'due_date' => 'required|date',
         ], [
@@ -186,6 +234,17 @@ class TaskController extends Controller
             'due_date.date' => 'Please provide a valid date for the deadline.',
             'description.max' => 'Description cannot exceed 2,000 characters.',
         ]);
+
+        if (empty($validated['category'])) {
+            $validated['category'] = 'Operations';
+        }
+
+        if (! empty($validated['assigned_user_id'])) {
+            $assignedUser = User::find($validated['assigned_user_id']);
+            if ($assignedUser) {
+                $validated['assigned_to'] = $assignedUser->name;
+            }
+        }
 
         $task->update($validated);
 
@@ -212,7 +271,7 @@ class TaskController extends Controller
         }
 
         $fileName = 'office-tasks-'.Carbon::now()->format('Y-m-d_His').'.csv';
-        $tasks = Task::orderBy('due_date', 'asc')->get();
+        $tasks = Task::with('items')->orderBy('due_date', 'asc')->get();
 
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
@@ -233,11 +292,13 @@ class TaskController extends Controller
                 'Task ID',
                 'Title',
                 'Description',
+                'Category',
                 'Assigned To',
                 'Priority',
                 'Status',
                 'Due Date',
                 'Is Overdue',
+                'Checklist Progress',
                 'Created Date',
             ]);
 
@@ -246,11 +307,13 @@ class TaskController extends Controller
                     $task->id,
                     $task->title,
                     $task->description,
+                    $task->category ?? 'Operations',
                     $task->assigned_to,
                     $task->priority,
                     $task->status,
                     $task->due_date ? Carbon::parse($task->due_date)->format('Y-m-d') : 'N/A',
                     $task->is_overdue ? 'YES' : 'NO',
+                    "{$task->checklist_progress}% ({$task->completed_items_count}/{$task->total_items_count})",
                     $task->created_at->format('Y-m-d H:i:s'),
                 ]);
             }

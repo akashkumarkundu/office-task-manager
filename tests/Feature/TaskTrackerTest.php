@@ -195,3 +195,120 @@ test('tasks can be exported to CSV', function () {
     $response->assertOk()
         ->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
 });
+
+test('user can add, toggle, and delete subtasks checklist items', function () {
+    $task = Task::create([
+        'title' => 'Main Project Task',
+        'assigned_to' => 'Alex Smith',
+        'priority' => 'High',
+        'status' => 'In Progress',
+        'due_date' => now()->addDays(5)->toDateString(),
+    ]);
+
+    // 1. Add subtask
+    $response = $this->actingAs($this->user)->post(route('tasks.items.store', $task), [
+        'title' => 'Step 1: Write Architecture Spec',
+    ]);
+
+    $response->assertRedirect();
+    $this->assertDatabaseHas('task_items', [
+        'task_id' => $task->id,
+        'title' => 'Step 1: Write Architecture Spec',
+        'is_completed' => false,
+    ]);
+
+    $item = $task->items()->first();
+
+    // 2. Toggle subtask
+    $toggleResponse = $this->actingAs($this->user)->patch(route('tasks.items.toggle', $item));
+    $toggleResponse->assertRedirect();
+    expect($item->fresh()->is_completed)->toBeTrue();
+    expect($task->fresh()->checklist_progress)->toBe(100);
+
+    // 3. Delete subtask
+    $deleteResponse = $this->actingAs($this->user)->delete(route('tasks.items.destroy', $item));
+    $deleteResponse->assertRedirect();
+    $this->assertDatabaseMissing('task_items', ['id' => $item->id]);
+});
+
+test('user can post and delete discussion comments on tasks', function () {
+    $task = Task::create([
+        'title' => 'Design Sprint',
+        'assigned_to' => 'Sarah Connor',
+        'priority' => 'Medium',
+        'status' => 'Pending',
+        'due_date' => now()->addDays(3)->toDateString(),
+    ]);
+
+    // 1. Post comment
+    $response = $this->actingAs($this->user)->post(route('tasks.comments.store', $task), [
+        'comment' => 'Initial wireframes are uploaded for review.',
+    ]);
+
+    $response->assertRedirect();
+    $this->assertDatabaseHas('task_comments', [
+        'task_id' => $task->id,
+        'user_id' => $this->user->id,
+        'comment' => 'Initial wireframes are uploaded for review.',
+    ]);
+
+    $comment = $task->comments()->first();
+
+    // 2. Delete comment as author
+    $deleteResponse = $this->actingAs($this->user)->delete(route('tasks.comments.destroy', $comment));
+    $deleteResponse->assertRedirect();
+    $this->assertDatabaseMissing('task_comments', ['id' => $comment->id]);
+});
+
+test('user can filter tasks by category and assigned to me', function () {
+    Task::create([
+        'title' => 'Backend API Development',
+        'assigned_to' => $this->user->name,
+        'assigned_user_id' => $this->user->id,
+        'category' => 'Development',
+        'priority' => 'High',
+        'status' => 'In Progress',
+    ]);
+
+    Task::create([
+        'title' => 'Logo & Brand Redesign',
+        'assigned_to' => 'Other Designer',
+        'category' => 'Design',
+        'priority' => 'Low',
+        'status' => 'Pending',
+    ]);
+
+    // Filter by Category
+    $catResponse = $this->actingAs($this->user)->get(route('tasks.index', ['category' => 'Development']));
+    $catResponse->assertOk()
+        ->assertSee('Backend API Development')
+        ->assertDontSee('Logo & Brand Redesign');
+
+    // Filter by My Tasks
+    $myTasksResponse = $this->actingAs($this->user)->get(route('tasks.index', ['filter' => 'my_tasks']));
+    $myTasksResponse->assertOk()
+        ->assertSee('Backend API Development')
+        ->assertDontSee('Logo & Brand Redesign');
+});
+
+test('kanban status update supports ajax drag and drop request', function () {
+    $task = Task::create([
+        'title' => 'Draggable Task',
+        'assigned_to' => 'John Doe',
+        'priority' => 'Medium',
+        'status' => 'Pending',
+    ]);
+
+    $response = $this->actingAs($this->user)
+        ->patchJson(route('tasks.status', $task), [
+            'status' => 'Completed',
+        ]);
+
+    $response->assertOk()
+        ->assertJson([
+            'success' => true,
+            'status' => 'Completed',
+        ]);
+
+    expect($task->fresh()->status)->toBe('Completed');
+});

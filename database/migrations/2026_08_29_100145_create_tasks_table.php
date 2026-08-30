@@ -11,16 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tasks', function (Blueprint $table) {
-            $table->id();
-            $table->string('title');
-            $table->text('description')->nullable();
-            $table->string('assigned_to');
-            $table->enum('priority', ['Low', 'Medium', 'High'])->default('Medium');
-            $table->enum('status', ['Pending', 'In Progress', 'Completed'])->default('Pending');
-            $table->date('due_date')->nullable();
-            $table->timestamps();
-        });
+        if (! Schema::hasTable('tasks')) {
+            Schema::create('tasks', function (Blueprint $table) {
+                $table->id();
+                $table->string('title');
+                $table->text('description')->nullable();
+                $table->string('assigned_to');
+                $table->enum('priority', ['Low', 'Medium', 'High'])->default('Medium');
+                $table->enum('status', ['Pending', 'In Progress', 'Completed'])->default('Pending');
+                $table->date('due_date')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

@@ -4,7 +4,7 @@
             <div>
                 <flux:heading size="xl" level="1" class="font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Add New Task</flux:heading>
                 <flux:subheading size="lg" class="text-zinc-500 dark:text-zinc-400 mt-1">
-                    Assign a new deliverable to your workspace with clear priority, deadline, and instructions.
+                    Assign a new deliverable to your workspace with clear priority, department, deadline, and instructions.
                 </flux:subheading>
             </div>
             <flux:button href="{{ route('tasks.index') }}" variant="ghost" icon="arrow-left">
@@ -53,41 +53,67 @@
                         @enderror
                     </div>
 
-                    <!-- 3. Desktop Two-Column Layout (Assigned To & Due Date) -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Assigned To (Required) -->
+                    <!-- 3. Two-Column Layout (Assignee & Category) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6" x-data="{
+                        selectedUserId: '{{ old('assigned_user_id', '') }}',
+                        customName: '{{ old('assigned_to', '') }}',
+                        updateAssignee(event) {
+                            const select = event.target;
+                            const selectedOption = select.options[select.selectedIndex];
+                            if (select.value) {
+                                this.customName = selectedOption.getAttribute('data-name');
+                            }
+                        }
+                    }">
+                        <!-- Assigned To (Registered User or Custom Name) -->
                         <div>
-                            <flux:input 
-                                label="Assigned To *" 
-                                name="assigned_to" 
-                                value="{{ old('assigned_to') }}" 
-                                placeholder="e.g. John Doe, Sarah Jenkins..." 
-                                icon="user" 
-                                required 
-                            />
+                            <label class="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1.5">
+                                Assigned To *
+                            </label>
+                            <div class="space-y-2">
+                                @if(isset($users) && $users->count() > 0)
+                                    <select 
+                                        name="assigned_user_id" 
+                                        class="w-full rounded-xl border border-zinc-200/80 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 shadow-xs focus:ring-2 focus:ring-indigo-500"
+                                        x-on:change="updateAssignee($event)"
+                                    >
+                                        <option value="">-- Choose Registered Workspace Member --</option>
+                                        @foreach($users as $user)
+                                            <option value="{{ $user->id }}" data-name="{{ $user->name }}" {{ old('assigned_user_id') == $user->id ? 'selected' : '' }}>
+                                                {{ $user->name }} ({{ $user->email }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                @endif
+
+                                <flux:input 
+                                    name="assigned_to" 
+                                    x-model="customName"
+                                    placeholder="Or enter person's full name..." 
+                                    icon="user" 
+                                    required 
+                                />
+                            </div>
                             @error('assigned_to')
                                 <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{{ $message }}</p>
                             @enderror
                         </div>
 
-                        <!-- Due Date (Required) -->
+                        <!-- Department / Category -->
                         <div>
-                            <flux:input 
-                                type="date" 
-                                label="Due Date *" 
-                                name="due_date" 
-                                value="{{ old('due_date') }}" 
-                                icon="calendar" 
-                                required 
-                            />
-                            @error('due_date')
+                            <flux:select label="Department / Category *" name="category">
+                                @foreach($categories ?? ['Development', 'Design', 'Marketing', 'Operations', 'Finance', 'Management', 'Other'] as $cat)
+                                    <option value="{{ $cat }}" {{ old('category', 'Operations') == $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                                @endforeach
+                            </flux:select>
+                            @error('category')
                                 <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{{ $message }}</p>
                             @enderror
                         </div>
                     </div>
 
-                    <!-- 4. Desktop Two-Column Layout (Priority & Status) -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 4. Three-Column Layout (Priority, Status, & Due Date) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <!-- Priority (Required) -->
                         <div>
                             <flux:select label="Priority *" name="priority">
@@ -108,6 +134,21 @@
                                 <option value="Completed" {{ old('status') == 'Completed' ? 'selected' : '' }}>Completed</option>
                             </flux:select>
                             @error('status')
+                                <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Due Date (Required) -->
+                        <div>
+                            <flux:input 
+                                type="date" 
+                                label="Due Date *" 
+                                name="due_date" 
+                                value="{{ old('due_date') }}" 
+                                icon="calendar" 
+                                required 
+                            />
+                            @error('due_date')
                                 <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{{ $message }}</p>
                             @enderror
                         </div>

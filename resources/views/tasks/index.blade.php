@@ -33,8 +33,12 @@
 
         <!-- Quick Filter Pills -->
         <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-4 text-xs font-semibold">
-            <a href="{{ route('tasks.index') }}" class="px-3.5 py-1.5 rounded-full transition-colors {{ !request()->has('filter') && !request()->has('priority') ? 'bg-indigo-600 text-white shadow-xs' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200' }}">
+            <a href="{{ route('tasks.index') }}" class="px-3.5 py-1.5 rounded-full transition-colors {{ !request()->has('filter') && !request()->has('priority') && !request()->has('category') ? 'bg-indigo-600 text-white shadow-xs' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200' }}">
                 All Tasks
+            </a>
+            <a href="{{ route('tasks.index', array_merge(request()->except('page'), ['filter' => 'my_tasks'])) }}" class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full transition-colors {{ request('filter') === 'my_tasks' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 hover:bg-indigo-100' }}">
+                <flux:icon name="user" class="size-3" />
+                Assigned to Me
             </a>
             <a href="{{ route('tasks.index', array_merge(request()->except('page'), ['filter' => 'overdue'])) }}" class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full transition-colors {{ request('filter') === 'overdue' ? 'bg-rose-600 text-white shadow-xs' : 'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 hover:bg-rose-100' }}">
                 <flux:icon name="exclamation-triangle" class="size-3" />
@@ -59,7 +63,7 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
                     <!-- Search Input Section -->
-                    <div class="lg:col-span-5">
+                    <div class="lg:col-span-4">
                         <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">
                             Search Tasks
                         </label>
@@ -71,6 +75,23 @@
                             clearable
                             class="w-full"
                         />
+                    </div>
+
+                    <!-- Category / Department Filter -->
+                    <div class="lg:col-span-2">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">
+                            Category
+                        </label>
+                        <flux:select name="category">
+                            <option value="All">All Categories</option>
+                            <option value="Development" {{ request('category') == 'Development' ? 'selected' : '' }}>Development</option>
+                            <option value="Design" {{ request('category') == 'Design' ? 'selected' : '' }}>Design</option>
+                            <option value="Marketing" {{ request('category') == 'Marketing' ? 'selected' : '' }}>Marketing</option>
+                            <option value="Operations" {{ request('category') == 'Operations' ? 'selected' : '' }}>Operations</option>
+                            <option value="Finance" {{ request('category') == 'Finance' ? 'selected' : '' }}>Finance</option>
+                            <option value="Management" {{ request('category') == 'Management' ? 'selected' : '' }}>Management</option>
+                            <option value="Other" {{ request('category') == 'Other' ? 'selected' : '' }}>Other</option>
+                        </flux:select>
                     </div>
                     
                     <!-- Status Filter -->
@@ -100,15 +121,15 @@
                     </div>
 
                     <!-- Sort By -->
-                    <div class="lg:col-span-3">
+                    <div class="lg:col-span-2">
                         <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">
                             Sort Order
                         </label>
                         <flux:select name="sort">
-                            <option value="due_date_asc" {{ request('sort', 'due_date_asc') == 'due_date_asc' ? 'selected' : '' }}>Due Date (Earliest)</option>
-                            <option value="due_date_desc" {{ request('sort') == 'due_date_desc' ? 'selected' : '' }}>Due Date (Latest)</option>
-                            <option value="priority_high" {{ request('sort') == 'priority_high' ? 'selected' : '' }}>Priority (High First)</option>
-                            <option value="title_asc" {{ request('sort') == 'title_asc' ? 'selected' : '' }}>Title (A to Z)</option>
+                            <option value="due_date_asc" {{ request('sort', 'due_date_asc') == 'due_date_asc' ? 'selected' : '' }}>Due Date</option>
+                            <option value="due_date_desc" {{ request('sort') == 'due_date_desc' ? 'selected' : '' }}>Due Date (Desc)</option>
+                            <option value="priority_high" {{ request('sort') == 'priority_high' ? 'selected' : '' }}>Priority High</option>
+                            <option value="title_asc" {{ request('sort') == 'title_asc' ? 'selected' : '' }}>Title (A-Z)</option>
                             <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Recently Added</option>
                         </flux:select>
                     </div>
@@ -120,7 +141,7 @@
                         <flux:button type="submit" variant="primary" icon="funnel" class="shadow-xs">
                             Apply Filters
                         </flux:button>
-                        @if(request()->filled('search') || (request()->filled('status') && request('status') !== 'All') || (request()->filled('priority') && request('priority') !== 'All') || request()->filled('filter'))
+                        @if(request()->filled('search') || (request()->filled('status') && request('status') !== 'All') || (request()->filled('priority') && request('priority') !== 'All') || (request()->filled('category') && request('category') !== 'All') || request()->filled('filter'))
                             <flux:button href="{{ route('tasks.index') }}" variant="ghost" icon="arrow-path">
                                 Reset Filters
                             </flux:button>
@@ -131,59 +152,6 @@
                         Showing {{ $tasks->firstItem() ?? 0 }}-{{ $tasks->lastItem() ?? 0 }} of {{ $tasks->total() }} tasks
                     </div>
                 </div>
-
-                <!-- Active Search & Filter Indicator Bar -->
-                @if(request()->filled('search') || (request()->filled('status') && request('status') !== 'All') || (request()->filled('priority') && request('priority') !== 'All') || request()->filled('filter'))
-                    <div class="pt-3.5 mt-2 border-t border-zinc-100 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3 text-sm">
-                        <div class="flex flex-wrap items-center gap-2">
-                            <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Active Filters:</span>
-                            
-                            @if(request()->filled('search'))
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/60">
-                                    <flux:icon name="magnifying-glass" class="size-3 text-indigo-500" />
-                                    Showing results for: <strong class="font-semibold">"{{ request('search') }}"</strong>
-                                    <a href="{{ route('tasks.index', request()->except('search')) }}" class="hover:text-indigo-900 dark:hover:text-indigo-100 ml-1 p-0.5 rounded-full hover:bg-indigo-200/60" title="Remove search term">&times;</a>
-                                </span>
-                            @endif
-
-                            @if(request()->filled('status') && request('status') !== 'All')
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60">
-                                    Status: <strong>{{ request('status') }}</strong>
-                                    <a href="{{ route('tasks.index', request()->except('status')) }}" class="hover:text-amber-900 dark:hover:text-amber-100 ml-1 p-0.5 rounded-full hover:bg-amber-200/60" title="Remove status filter">&times;</a>
-                                </span>
-                            @endif
-
-                            @if(request()->filled('priority') && request('priority') !== 'All')
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
-                                    Priority: <strong>{{ request('priority') }}</strong>
-                                    <a href="{{ route('tasks.index', request()->except('priority')) }}" class="hover:text-zinc-900 dark:hover:text-zinc-100 ml-1 p-0.5 rounded-full hover:bg-zinc-200" title="Remove priority filter">&times;</a>
-                                </span>
-                            @endif
-
-                            @if(request()->filled('filter'))
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
-                                    Tab: <strong>{{ ucfirst(str_replace('_', ' ', request('filter'))) }}</strong>
-                                    <a href="{{ route('tasks.index', request()->except('filter')) }}" class="hover:text-indigo-900 ml-1 p-0.5 rounded-full hover:bg-indigo-200" title="Remove tab filter">&times;</a>
-                                </span>
-                            @endif
-                        </div>
-
-                        <div class="flex items-center gap-3">
-                            <span class="text-xs text-zinc-500 dark:text-zinc-400">
-                                {{ $tasks->total() }} {{ \Illuminate\Support\Str::plural('task', $tasks->total()) }} found
-                            </span>
-                            @if(request()->filled('search'))
-                                <flux:button href="{{ route('tasks.index', request()->except('search')) }}" size="sm" variant="ghost" icon="x-mark" class="text-xs">
-                                    Clear Search
-                                </flux:button>
-                            @else
-                                <flux:button href="{{ route('tasks.index') }}" size="sm" variant="ghost" icon="x-mark" class="text-xs">
-                                    Clear Filters
-                                </flux:button>
-                            @endif
-                        </div>
-                    </div>
-                @endif
             </form>
         </flux:card>
 
@@ -192,12 +160,13 @@
             <div class="overflow-x-auto">
                 <flux:table class="min-w-full">
                     <flux:table.columns class="sticky top-0 bg-zinc-50/90 dark:bg-zinc-800/90 backdrop-blur-sm z-10">
-                        <flux:table.column class="w-2/5">Task</flux:table.column>
+                        <flux:table.column class="w-1/3">Task</flux:table.column>
+                        <flux:table.column>Category</flux:table.column>
                         <flux:table.column>Assigned To</flux:table.column>
+                        <flux:table.column>Checklist</flux:table.column>
                         <flux:table.column>Priority</flux:table.column>
                         <flux:table.column>Status</flux:table.column>
                         <flux:table.column>Due Date</flux:table.column>
-                        <flux:table.column>Created Date</flux:table.column>
                         <flux:table.column class="text-right">Actions</flux:table.column>
                     </flux:table.columns>
 
@@ -226,19 +195,48 @@
                                     </div>
                                 </flux:table.cell>
 
-                                <!-- 2. Assigned To -->
+                                <!-- 2. Category -->
+                                <flux:table.cell>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 border border-zinc-200/60 dark:border-zinc-700">
+                                        {{ $task->category ?? 'Operations' }}
+                                    </span>
+                                </flux:table.cell>
+
+                                <!-- 3. Assigned To -->
                                 <flux:table.cell>
                                     <div class="flex items-center gap-2">
-                                        <div class="size-7 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 flex items-center justify-center font-medium text-xs">
+                                        <div class="size-7 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 flex items-center justify-center font-bold text-xs">
                                             {{ strtoupper(substr($task->assigned_to, 0, 2)) }}
                                         </div>
-                                        <span class="text-sm font-medium text-zinc-800 dark:text-zinc-200">
-                                            {{ $task->assigned_to }}
-                                        </span>
+                                        <div class="flex flex-col">
+                                            <span class="text-xs font-medium text-zinc-800 dark:text-zinc-200">
+                                                {{ $task->assigned_to }}
+                                            </span>
+                                            @if($task->assigned_user_id)
+                                                <span class="text-[10px] text-emerald-600 dark:text-emerald-400">Registered</span>
+                                            @endif
+                                        </div>
                                     </div>
                                 </flux:table.cell>
 
-                                <!-- 3. Priority -->
+                                <!-- 4. Checklist Progress -->
+                                <flux:table.cell>
+                                    @if($task->total_items_count > 0)
+                                        <div class="flex flex-col gap-1 w-24">
+                                            <div class="flex items-center justify-between text-[10px] text-zinc-500 font-medium">
+                                                <span>{{ $task->completed_items_count }}/{{ $task->total_items_count }}</span>
+                                                <span>{{ $task->checklist_progress }}%</span>
+                                            </div>
+                                            <div class="w-full h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                                                <div class="h-full bg-indigo-500 rounded-full" style="width: {{ $task->checklist_progress }}%"></div>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <span class="text-xs text-zinc-400">-</span>
+                                    @endif
+                                </flux:table.cell>
+
+                                <!-- 5. Priority -->
                                 <flux:table.cell>
                                     @if($task->priority === 'High')
                                         <flux:badge size="sm" color="red" icon="fire">{{ $task->priority }}</flux:badge>
@@ -249,7 +247,7 @@
                                     @endif
                                 </flux:table.cell>
 
-                                <!-- 4. Status -->
+                                <!-- 6. Status -->
                                 <flux:table.cell>
                                     @if($task->status === 'Completed')
                                         <flux:badge size="sm" color="emerald" icon="check">{{ $task->status }}</flux:badge>
@@ -260,7 +258,7 @@
                                     @endif
                                 </flux:table.cell>
 
-                                <!-- 5. Due Date -->
+                                <!-- 7. Due Date -->
                                 <flux:table.cell>
                                     <span class="text-xs font-medium {{ $task->is_overdue ? 'text-rose-600 dark:text-rose-400 font-semibold' : 'text-zinc-600 dark:text-zinc-400' }} flex items-center gap-1.5 whitespace-nowrap">
                                         <flux:icon name="calendar" class="size-3.5 opacity-70" />
@@ -268,14 +266,7 @@
                                     </span>
                                 </flux:table.cell>
 
-                                <!-- 6. Created Date -->
-                                <flux:table.cell>
-                                    <span class="text-xs text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
-                                        {{ $task->created_at->format('d M Y') }}
-                                    </span>
-                                </flux:table.cell>
-
-                                <!-- 7. Actions -->
+                                <!-- 8. Actions -->
                                 <flux:table.cell class="text-right">
                                     <div class="flex items-center justify-end gap-1">
                                         <flux:button href="{{ route('tasks.show', $task) }}" variant="ghost" size="sm" icon="eye" class="text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200" title="View Details" />
@@ -300,7 +291,7 @@
                                                 </div>
 
                                                 <p class="text-sm text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/60 p-3 rounded-lg border border-zinc-200/60 dark:border-zinc-700/60">
-                                                    <strong>"{{ $task->title }}"</strong> will be permanently removed from the system. This action cannot be undone.
+                                                    <strong>"{{ $task->title }}"</strong> will be permanently removed.
                                                 </p>
 
                                                 <div class="flex justify-end gap-3">
@@ -322,27 +313,18 @@
                             </flux:table.row>
                         @empty
                             <flux:table.row>
-                                <flux:table.cell colspan="7">
+                                <flux:table.cell colspan="8">
                                     <div class="text-center py-16">
                                         <div class="size-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mx-auto text-zinc-400 dark:text-zinc-500 mb-4">
                                             <flux:icon name="magnifying-glass" class="size-8" />
                                         </div>
                                         <flux:heading size="lg" class="font-semibold text-zinc-900 dark:text-zinc-100">No tasks found</flux:heading>
                                         <flux:text class="text-zinc-500 dark:text-zinc-400 mt-1 max-w-sm mx-auto">
-                                            @if(request()->filled('search') || (request()->filled('status') && request('status') !== 'All') || (request()->filled('priority') && request('priority') !== 'All') || request()->filled('filter'))
-                                                Try changing your search or filters.
-                                            @else
-                                                Your workspace is clean! Get started by adding a new task to track.
-                                            @endif
+                                            Try changing your search or filters, or add a new deliverable.
                                         </flux:text>
                                         <div class="mt-6 flex justify-center gap-3">
-                                            @if(request()->filled('search'))
-                                                <flux:button href="{{ route('tasks.index', request()->except('search')) }}" variant="ghost" icon="x-mark">Clear Search</flux:button>
-                                            @elseif(request()->filled('status') || request()->filled('priority') || request()->filled('filter'))
-                                                <flux:button href="{{ route('tasks.index') }}" variant="ghost" icon="x-mark">Clear Filters</flux:button>
-                                            @else
-                                                <flux:button href="{{ route('tasks.create') }}" variant="primary" icon="plus">Create First Task</flux:button>
-                                            @endif
+                                            <flux:button href="{{ route('tasks.index') }}" variant="ghost" icon="x-mark">Reset All Filters</flux:button>
+                                            <flux:button href="{{ route('tasks.create') }}" variant="primary" icon="plus">Create Task</flux:button>
                                         </div>
                                     </div>
                                 </flux:table.cell>
