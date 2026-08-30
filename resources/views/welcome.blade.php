@@ -22,8 +22,8 @@
                     </div>
                 </a>
 
-                <!-- Center Nav Links -->
-                <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600 dark:text-zinc-300">
+                <!-- Center Nav Links (Hidden on smaller viewports and mobile frames) -->
+                <nav class="hidden xl:flex items-center gap-6 text-sm font-semibold text-slate-600 dark:text-zinc-300">
                     <a href="#dashboard-preview" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Dashboard Overview</a>
                     <a href="#features" class="hover:text-red-600 dark:hover:text-red-400 transition-colors">Features</a>
                     <a href="{{ route('tasks.kanban') }}" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Kanban Board</a>
@@ -31,9 +31,11 @@
                 </nav>
 
                 <!-- Right Action Buttons + Theme & Brightness Controller -->
-                <div class="flex items-center gap-2 sm:gap-3">
+                <div class="flex items-center gap-2 sm:gap-3 shrink-0">
                     <!-- Brightness & Dark Theme / Screen Controller -->
-                    <x-theme-view-controller />
+                    <div class="hidden sm:block">
+                        <x-theme-view-controller />
+                    </div>
 
                     <div class="h-5 w-px bg-slate-200 dark:bg-zinc-800 hidden sm:block"></div>
 
@@ -364,6 +366,11 @@
                 </div>
             </div>
         </footer>
+
+        <!-- 6. Floating Persistent Quick Switcher (Always accessible on screen) -->
+        <aside aria-label="Screen View and Theme Switcher" class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[100] p-1.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-300 dark:border-blue-500/50 shadow-2xl shadow-black/50 flex items-center gap-2">
+            <x-theme-view-controller />
+        </aside>
 
         @fluxScripts
     </body>

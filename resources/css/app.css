@@ -89,6 +89,13 @@ select:focus[data-flux-control] {
         border-top-left-radius: 28px !important;
         border-top-right-radius: 28px !important;
     }
+
+    /* Prevent desktop nav links from overflowing inside the 430px mobile frame */
+    html[data-view-mode="mobile"] nav,
+    html[data-view-mode="mobile"] .xl\:flex,
+    html[data-view-mode="mobile"] .md\:flex {
+        display: none !important;
+    }
 }
 
 html[data-view-mode="desktop"],
@@ -101,5 +108,5 @@ html[data-view-mode="auto"] body {
     box-shadow: none !important;
     padding: 0 !important;
     margin: 0 !important;
-    background-color: transparent;
+    background-color: transparent !important;
 }
