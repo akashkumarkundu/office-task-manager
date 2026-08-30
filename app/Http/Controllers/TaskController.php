@@ -176,7 +176,7 @@ class TaskController extends Controller
 
         // If assigned_user_id was picked and assigned_to is standard/empty, sync with user's name
         if (! empty($validated['assigned_user_id'])) {
-            $assignedUser = User::find($validated['assigned_user_id']);
+            $assignedUser = User::query()->find($validated['assigned_user_id']);
             if ($assignedUser) {
                 $validated['assigned_to'] = $assignedUser->name;
             }
@@ -216,7 +216,7 @@ class TaskController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:2000',
-            'assigned_to' => 'required|string|max:255',
+            'assigned_to' => 'required|string|max:100',
             'assigned_user_id' => 'nullable|exists:users,id',
             'priority' => ['required', Rule::in(['Low', 'Medium', 'High'])],
             'category' => 'nullable|string|max:50',
@@ -240,7 +240,7 @@ class TaskController extends Controller
         }
 
         if (! empty($validated['assigned_user_id'])) {
-            $assignedUser = User::find($validated['assigned_user_id']);
+            $assignedUser = User::query()->find($validated['assigned_user_id']);
             if ($assignedUser) {
                 $validated['assigned_to'] = $assignedUser->name;
             }

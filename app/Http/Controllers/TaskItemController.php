@@ -45,7 +45,9 @@ class TaskItemController extends Controller
             'is_completed' => ! $item->is_completed,
         ]);
 
-        $task = $item->task->fresh();
+        /** @var Task $task */
+        $task = $item->task;
+        $task->refresh();
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -65,14 +67,16 @@ class TaskItemController extends Controller
      */
     public function destroy(Request $request, TaskItem $item): RedirectResponse|JsonResponse
     {
+        /** @var Task $task */
         $task = $item->task;
         $item->delete();
+        $task->refresh();
 
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => 'Checklist item deleted.',
-                'checklist_progress' => $task->fresh()->checklist_progress,
+                'checklist_progress' => $task->checklist_progress,
             ]);
         }
 

@@ -147,6 +147,8 @@ class Task extends Model
 
     /**
      * Checklist completion percentage (0 - 100).
+     *
+     * @return Attribute<int, never>
      */
     protected function checklistProgress(): Attribute
     {
@@ -167,6 +169,8 @@ class Task extends Model
 
     /**
      * Count of completed checklist items.
+     *
+     * @return Attribute<int, never>
      */
     protected function completedItemsCount(): Attribute
     {
@@ -179,6 +183,8 @@ class Task extends Model
 
     /**
      * Count of total checklist items.
+     *
+     * @return Attribute<int, never>
      */
     protected function totalItemsCount(): Attribute
     {

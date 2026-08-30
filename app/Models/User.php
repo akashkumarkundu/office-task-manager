@@ -63,6 +63,8 @@ class User extends Authenticatable implements PasskeyUser
 
     /**
      * Tasks assigned to the user.
+     *
+     * @return HasMany<Task, $this>
      */
     public function tasks(): HasMany
     {
