@@ -312,3 +312,9 @@ test('kanban status update supports ajax drag and drop request', function () {
 
     expect($task->fresh()->status)->toBe('Completed');
 });
+
+test('guests can access dashboard, kanban, and task list directly without login redirect', function () {
+    $this->get(route('dashboard'))->assertOk();
+    $this->get(route('tasks.kanban'))->assertOk();
+    $this->get(route('tasks.index'))->assertOk();
+});
