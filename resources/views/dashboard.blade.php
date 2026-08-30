@@ -1,11 +1,11 @@
 <x-layouts::app title="Executive Dashboard">
     <flux:main container class="py-2">
-        <!-- 1. Executive Top Hero Mesh Banner -->
+        <!-- 1. Executive Top Hero Mesh Cockpit Banner -->
         <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-950 via-indigo-950 via-purple-950 to-slate-950 px-6 py-8 sm:px-10 sm:py-10 mb-8 text-white shadow-2xl border border-indigo-500/30">
             <!-- Background Ambient Glow Shapes -->
-            <div class="absolute -top-32 -right-32 size-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="absolute -bottom-32 -left-32 size-96 bg-purple-500/20 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="absolute top-1/2 left-1/3 -translate-y-1/2 size-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -top-32 -right-32 size-96 bg-indigo-500/25 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-32 -left-32 size-96 bg-purple-500/25 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute top-1/2 left-1/3 -translate-y-1/2 size-72 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none"></div>
             <div class="absolute right-8 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none hidden lg:block">
                 <flux:icon name="squares-plus" class="size-80 text-white" />
             </div>
@@ -13,18 +13,24 @@
             <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div>
                     <div class="flex items-center gap-2.5 flex-wrap mb-3">
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-xs font-semibold backdrop-blur-md border border-indigo-400/30 text-indigo-200 shadow-xs">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-indigo-500/20 text-xs font-semibold backdrop-blur-md border border-indigo-400/30 text-indigo-200 shadow-xs">
                             <span class="size-2 rounded-full bg-emerald-400 animate-ping"></span>
                             <flux:icon name="building-office-2" class="size-3.5 text-indigo-300" />
                             <span>{{ config('tracker.company_name', 'ASTGD') }} Enterprise Hub</span>
                         </div>
                         
-                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-900/50 text-xs font-semibold text-purple-200 border border-purple-500/30 backdrop-blur-md">
-                            <flux:icon name="sparkles" class="size-3.5 text-purple-300" />
-                            <span>Status: {{ $healthLabel }}</span>
+                        <!-- Gamification Rank Tier Badge -->
+                        <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r {{ $rankBadgeColor }} text-xs font-black text-white shadow-lg border border-white/20 backdrop-blur-md">
+                            <flux:icon name="trophy" class="size-3.5 text-amber-200" />
+                            <span>{{ $rankTitle }} ({{ number_format($xpPoints) }} XP)</span>
                         </div>
 
-                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-xs font-medium text-indigo-200 border border-white/10 backdrop-blur-md">
+                        <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-purple-900/50 text-xs font-semibold text-purple-200 border border-purple-500/30 backdrop-blur-md">
+                            <flux:icon name="sparkles" class="size-3.5 text-purple-300" />
+                            <span>{{ $healthLabel }}</span>
+                        </div>
+
+                        <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/10 text-xs font-medium text-indigo-200 border border-white/10 backdrop-blur-md">
                             <flux:icon name="calendar" class="size-3.5 text-indigo-300" />
                             <span>{{ $currentDate }}</span>
                         </div>
@@ -34,8 +40,8 @@
                         {{ config('tracker.office_app_name', 'Office Task Tracker') }}
                     </h1>
                     
-                    <p class="text-indigo-200/90 text-sm max-w-xl font-normal leading-relaxed">
-                        Real-time executive cockpit for task distribution, team velocity, workload analytics, and deadline management.
+                    <p class="text-indigo-200/90 text-sm max-w-2xl font-normal leading-relaxed">
+                        Real-time executive cockpit for deliverables distribution, team velocity, live time tracking, and multi-department analytics.
                     </p>
                 </div>
 
@@ -44,7 +50,7 @@
                         Kanban Board
                     </flux:button>
                     <flux:button href="{{ route('tasks.create') }}" icon="plus" variant="primary" class="shadow-xl shadow-indigo-500/30 font-bold bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-600 hover:from-indigo-600 hover:to-pink-700 text-white border-0 py-2.5 px-5.5 rounded-xl hover:scale-105 transition-all">
-                        Create New Task
+                        Create Deliverable
                     </flux:button>
                 </div>
             </div>
@@ -114,7 +120,7 @@
                     </div>
                     <div class="text-3xl sm:text-4xl font-black text-cyan-600 dark:text-cyan-400 tracking-tight">{{ $inProgressTasks }}</div>
                     <div class="mt-3 flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
-                        <span>Active work</span>
+                        <span>Active execution</span>
                         <span class="font-bold px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300">
                             {{ $totalTasks > 0 ? round(($inProgressTasks/$totalTasks)*100) : 0 }}% of total
                         </span>
@@ -150,11 +156,349 @@
                     </div>
                     <div class="text-3xl sm:text-4xl font-black text-rose-600 dark:text-rose-400 tracking-tight">{{ $highPriorityTasks }}</div>
                     <div class="mt-3 flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
-                        <span>Critical tasks</span>
+                        <span>Critical focus</span>
                         <span class="font-bold px-2 py-0.5 rounded-full {{ $highPriorityTasks > 0 ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300' : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700' }}">
                             {{ $highPriorityTasks > 0 ? 'Action required' : 'All clear' }}
                         </span>
                     </div>
+                </div>
+            </div>
+
+            <!-- 3. INNOVATIVE INTERACTIVE SUITE: Focus Stopwatch & 5-Second Quick-Task Creator -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+                <!-- ⏱️ Live Focus Stopwatch & Pomodoro Timer (Alpine.js Reactive Widget) -->
+                <div 
+                    x-data="{
+                        mode: 'stopwatch',
+                        running: false,
+                        seconds: 0,
+                        pomodoroSeconds: 25 * 60,
+                        timerInterval: null,
+                        selectedTask: '',
+                        
+                        startTimer() {
+                            if (this.running) return;
+                            this.running = true;
+                            this.timerInterval = setInterval(() => {
+                                if (this.mode === 'stopwatch') {
+                                    this.seconds++;
+                                } else {
+                                    if (this.pomodoroSeconds > 0) {
+                                        this.pomodoroSeconds--;
+                                    } else {
+                                        this.pauseTimer();
+                                        this.playChime();
+                                        alert('🎉 Focus Pomodoro session complete! Great work!');
+                                    }
+                                }
+                            }, 1000);
+                        },
+                        pauseTimer() {
+                            this.running = false;
+                            clearInterval(this.timerInterval);
+                        },
+                        resetTimer() {
+                            this.pauseTimer();
+                            if (this.mode === 'stopwatch') {
+                                this.seconds = 0;
+                            } else {
+                                this.pomodoroSeconds = 25 * 60;
+                            }
+                        },
+                        switchMode(newMode) {
+                            this.pauseTimer();
+                            this.mode = newMode;
+                            this.resetTimer();
+                        },
+                        formatTime(totalSecs) {
+                            const hrs = Math.floor(totalSecs / 3600).toString().padStart(2, '0');
+                            const mins = Math.floor((totalSecs % 3600) / 60).toString().padStart(2, '0');
+                            const secs = (totalSecs % 60).toString().padStart(2, '0');
+                            return hrs > 0 ? `${hrs}:${mins}:${secs}` : `${mins}:${secs}`;
+                        },
+                        playChime() {
+                            try {
+                                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                                const osc = ctx.createOscillator();
+                                const gain = ctx.createGain();
+                                osc.connect(gain);
+                                gain.connect(ctx.destination);
+                                osc.type = 'sine';
+                                osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
+                                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+                                osc.start();
+                                osc.stop(ctx.currentTime + 0.6);
+                            } catch(e) {}
+                        }
+                    }"
+                    class="col-span-1 lg:col-span-6 rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 border-2 border-indigo-500/40 p-6 text-white shadow-xl relative overflow-hidden flex flex-col justify-between"
+                >
+                    <!-- Background ambient aura -->
+                    <div class="absolute -top-20 -right-20 size-48 bg-indigo-500/20 rounded-full blur-2xl pointer-events-none"></div>
+
+                    <div>
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <div class="flex items-center gap-2.5">
+                                <div class="p-2.5 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/40 shadow-xs">
+                                    <flux:icon name="bolt" class="size-5" />
+                                </div>
+                                <div>
+                                    <h3 class="text-base font-extrabold text-white">Live Focus & Stopwatch Engine</h3>
+                                    <p class="text-xs text-indigo-300/80">Track deep work sessions in real-time</p>
+                                </div>
+                            </div>
+
+                            <!-- Mode Toggle Switch -->
+                            <div class="flex items-center p-1 rounded-xl bg-slate-950/80 border border-indigo-500/30 text-xs font-bold">
+                                <button 
+                                    @click="switchMode('stopwatch')" 
+                                    :class="mode === 'stopwatch' ? 'bg-indigo-600 text-white shadow-xs' : 'text-zinc-400 hover:text-white'" 
+                                    class="px-3 py-1 rounded-lg transition-all cursor-pointer"
+                                >
+                                    Stopwatch
+                                </button>
+                                <button 
+                                    @click="switchMode('pomodoro')" 
+                                    :class="mode === 'pomodoro' ? 'bg-indigo-600 text-white shadow-xs' : 'text-zinc-400 hover:text-white'" 
+                                    class="px-3 py-1 rounded-lg transition-all cursor-pointer"
+                                >
+                                    25m Pomodoro
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Active Deliverable Selector -->
+                        <div class="mb-5">
+                            <label class="block text-xs font-semibold text-indigo-200/80 mb-1.5">Select Focus Deliverable:</label>
+                            <select 
+                                x-model="selectedTask" 
+                                class="w-full text-xs font-medium bg-slate-950/90 text-white rounded-xl border border-indigo-500/40 px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                            >
+                                <option value="">-- General Workspace Productivity --</option>
+                                @foreach($activeTimerTasks as $task)
+                                    <option value="{{ $task->id }}">[{{ $task->priority }}] {{ $task->title }} ({{ $task->assigned_to }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Live Digital Counter Display -->
+                        <div class="my-4 py-6 px-4 rounded-2xl bg-slate-950/70 border border-indigo-500/30 text-center relative overflow-hidden group">
+                            <div 
+                                class="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-purple-500/15 to-pink-500/10 opacity-0 transition-opacity duration-700" 
+                                :class="{ 'opacity-100 animate-pulse': running }"
+                            ></div>
+                            
+                            <div class="relative z-10">
+                                <span 
+                                    class="text-4xl sm:text-5xl font-black tracking-widest font-mono text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 via-white to-cyan-200"
+                                    x-text="mode === 'stopwatch' ? formatTime(seconds) : formatTime(pomodoroSeconds)"
+                                >
+                                    00:00
+                                </span>
+                                
+                                <div class="mt-2 flex items-center justify-center gap-2 text-xs font-bold text-indigo-300">
+                                    <span class="size-2 rounded-full" :class="running ? 'bg-emerald-400 animate-ping' : 'bg-zinc-500'"></span>
+                                    <span x-text="running ? 'Timer Active & Logging...' : 'Timer Paused'"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timer Action Controls -->
+                    <div class="flex items-center gap-3 pt-3 border-t border-indigo-900/60">
+                        <button 
+                            @click="startTimer()" 
+                            x-show="!running" 
+                            class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-xs shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] cursor-pointer"
+                        >
+                            <flux:icon name="play" class="size-4" />
+                            Start Focus
+                        </button>
+                        
+                        <button 
+                            @click="pauseTimer()" 
+                            x-show="running" 
+                            class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-black text-xs shadow-lg shadow-amber-500/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] cursor-pointer"
+                        >
+                            <flux:icon name="pause" class="size-4" />
+                            Pause Session
+                        </button>
+
+                        <button 
+                            @click="resetTimer()" 
+                            class="py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition-all cursor-pointer flex items-center gap-1.5"
+                        >
+                            <flux:icon name="arrow-path" class="size-3.5" />
+                            Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ⚡ 5-Second Quick-Task Creator (Fast Inline Creation) -->
+                <div class="col-span-1 lg:col-span-6 rounded-3xl bg-white dark:bg-zinc-900 border-2 border-purple-200 dark:border-purple-900/60 p-6 shadow-xl flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute -bottom-20 -right-20 size-48 bg-purple-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+                    <div>
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <div class="flex items-center gap-2.5">
+                                <div class="p-2.5 rounded-2xl bg-purple-50 dark:bg-purple-950/80 text-purple-600 dark:text-purple-400 border border-purple-200/60 dark:border-purple-800/60 shadow-xs">
+                                    <flux:icon name="sparkles" class="size-5" />
+                                </div>
+                                <div>
+                                    <h3 class="text-base font-extrabold text-zinc-900 dark:text-zinc-100">5-Second Quick Task Launch</h3>
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Instantly launch deliverables without leaving cockpit</p>
+                                </div>
+                            </div>
+                            
+                            <span class="px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800">
+                                Instant Save
+                            </span>
+                        </div>
+
+                        <form action="{{ route('tasks.store') }}" method="POST" class="space-y-3.5">
+                            @csrf
+                            <input type="hidden" name="status" value="Pending">
+
+                            <div>
+                                <input 
+                                    type="text" 
+                                    name="title" 
+                                    required 
+                                    placeholder="What deliverable needs to be done? (e.g. Design Payment UI)"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 text-sm font-medium text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all"
+                                >
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <!-- Assignee -->
+                                <div>
+                                    <label class="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Assignee</label>
+                                    <input 
+                                        type="text" 
+                                        name="assigned_to" 
+                                        required 
+                                        placeholder="Assignee Name"
+                                        value="{{ auth()->user()->name ?? 'Workspace Member' }}"
+                                        class="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 text-xs font-medium text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                                    >
+                                </div>
+
+                                <!-- Category -->
+                                <div>
+                                    <label class="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Department</label>
+                                    <select 
+                                        name="category" 
+                                        class="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 text-xs font-medium text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                                    >
+                                        <option value="Development">Development 💻</option>
+                                        <option value="Design">Design 🎨</option>
+                                        <option value="Marketing">Marketing 🚀</option>
+                                        <option value="Operations" selected>Operations ⚡</option>
+                                        <option value="Finance">Finance 💰</option>
+                                        <option value="Management">Management 👑</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <!-- Priority Radios -->
+                                <div>
+                                    <label class="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Priority</label>
+                                    <div class="flex items-center gap-1.5">
+                                        <label class="flex-1 text-center text-xs font-bold py-1.5 px-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 cursor-pointer has-checked:bg-indigo-600 has-checked:text-white has-checked:border-indigo-600 transition-all">
+                                            <input type="radio" name="priority" value="Low" class="sr-only">
+                                            Low
+                                        </label>
+                                        <label class="flex-1 text-center text-xs font-bold py-1.5 px-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-amber-50 dark:hover:bg-amber-950/60 cursor-pointer has-checked:bg-amber-500 has-checked:text-white has-checked:border-amber-500 transition-all">
+                                            <input type="radio" name="priority" value="Medium" checked class="sr-only">
+                                            Med
+                                        </label>
+                                        <label class="flex-1 text-center text-xs font-bold py-1.5 px-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-rose-50 dark:hover:bg-rose-950/60 cursor-pointer has-checked:bg-rose-600 has-checked:text-white has-checked:border-rose-600 transition-all">
+                                            <input type="radio" name="priority" value="High" class="sr-only">
+                                            High
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Due Date -->
+                                <div>
+                                    <label class="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Due Date</label>
+                                    <input 
+                                        type="date" 
+                                        name="due_date" 
+                                        required 
+                                        value="{{ now()->addDays(3)->format('Y-m-d') }}"
+                                        class="w-full px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 text-xs font-medium text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                                    >
+                                </div>
+                            </div>
+
+                            <button 
+                                type="submit" 
+                                class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black text-xs shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2 transition-all hover:scale-[1.01] cursor-pointer mt-2"
+                            >
+                                <flux:icon name="plus-circle" class="size-4" />
+                                Launch Deliverable Now
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. 🎨 Vibrant Multi-Department Category Distribution Grid -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <div class="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50">
+                            <flux:icon name="squares-2x2" class="size-4.5" />
+                        </div>
+                        <div>
+                            <h2 class="text-base font-black text-zinc-900 dark:text-zinc-100">Multi-Department Workload Breakdown</h2>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400">Deliverable distribution and resolution rates by department</p>
+                        </div>
+                    </div>
+
+                    <a href="{{ route('tasks.index') }}" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1">
+                        Filter Tasks &rarr;
+                    </a>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+                    @foreach($categoryDistribution as $cat)
+                        <a 
+                            href="{{ route('tasks.index', ['category' => $cat['name']]) }}" 
+                            class="relative overflow-hidden rounded-2xl bg-white dark:bg-zinc-900 border {{ $cat['border'] }} p-4 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group"
+                        >
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="size-8 rounded-xl {{ $cat['bg'] }} {{ $cat['text'] }} flex items-center justify-center font-bold shadow-xs">
+                                        <flux:icon :name="$cat['icon']" class="size-4" />
+                                    </span>
+                                    <span class="text-xs font-black {{ $cat['text'] }}">
+                                        {{ $cat['percentage'] }}%
+                                    </span>
+                                </div>
+                                <h3 class="font-extrabold text-xs text-zinc-900 dark:text-zinc-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                    {{ $cat['name'] }}
+                                </h3>
+                                <div class="text-lg font-black text-zinc-800 dark:text-zinc-200 mt-0.5">
+                                    {{ $cat['count'] }} <span class="text-[10px] font-medium text-zinc-400">tasks</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-3 pt-2.5 border-t border-zinc-100 dark:border-zinc-800">
+                                <div class="w-full h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden mb-1">
+                                    <div class="h-full bg-gradient-to-r {{ $cat['gradient'] }}" style="width: {{ $cat['resolution_rate'] }}%"></div>
+                                </div>
+                                <span class="text-[10px] font-semibold text-zinc-400 flex items-center justify-between">
+                                    <span>Resolved</span>
+                                    <strong class="{{ $cat['text'] }}">{{ $cat['resolution_rate'] }}%</strong>
+                                </span>
+                            </div>
+                        </a>
+                    @endforeach
                 </div>
             </div>
 
@@ -168,13 +512,13 @@
                             </div>
                             <div>
                                 <div class="flex items-center gap-2">
-                                    <h2 class="text-xl font-black text-white tracking-tight">Overdue Deliverables Alert</h2>
+                                    <h2 class="text-xl font-black text-white tracking-tight">Overdue Deliverables Radar</h2>
                                     <span class="px-3 py-0.5 rounded-full text-xs font-black bg-gradient-to-r from-rose-500 to-red-600 text-white shadow-md">
                                         {{ $overdueCount }} Urgent Action Required
                                     </span>
                                 </div>
                                 <p class="text-xs text-rose-200/90 mt-0.5">
-                                    Attention required: Deliverables that have surpassed their target completion date.
+                                    Deliverables that have surpassed their target deadline require prompt status resolution.
                                 </p>
                             </div>
                         </div>
@@ -184,7 +528,7 @@
                         </flux:button>
                     </div>
 
-                    <!-- Overdue Task Cards Grid -->
+                    <!-- Overdue Task Cards Grid with 1-Click Status Resolvers -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         @foreach($overdueTasks->take(6) as $task)
                             <div class="p-4.5 rounded-2xl bg-slate-900/90 border border-rose-500/50 hover:border-rose-400 transition-all flex flex-col justify-between group shadow-md hover:shadow-rose-900/20">
@@ -215,9 +559,16 @@
                                         <flux:icon name="calendar" class="size-3.5" />
                                         {{ \Carbon\Carbon::parse($task->due_date)->format('d M Y') }}
                                     </span>
-                                    <span class="text-[11px] font-extrabold text-rose-200 bg-rose-950 px-2.5 py-0.5 rounded-lg border border-rose-800/80">
-                                        {{ $task->days_overdue }} {{ \Illuminate\Support\Str::plural('day', $task->days_overdue) }} overdue
-                                    </span>
+                                    
+                                    <form action="{{ route('tasks.status', $task) }}" method="POST">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="status" value="Completed">
+                                        <button type="submit" class="px-2.5 py-1 rounded-lg bg-emerald-600/80 hover:bg-emerald-600 text-white font-bold text-[11px] flex items-center gap-1 shadow-xs transition-colors cursor-pointer" title="Mark Resolved">
+                                            <flux:icon name="check" class="size-3" />
+                                            Done
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         @endforeach
@@ -225,7 +576,7 @@
                 </div>
             @endif
 
-            <!-- 3. Central Visual Analytics Grid (Health Dial + 7-Day Activity Chart) -->
+            <!-- 5. Central Visual Analytics Grid (Health Dial + 7-Day Activity Chart) -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
                 <!-- Completion Health & Productivity Index Gauge (5 cols) -->
                 <flux:card class="col-span-1 lg:col-span-5 shadow-sm hover:shadow-md transition-shadow rounded-3xl bg-white dark:bg-zinc-900 border-zinc-200/80 dark:border-zinc-800 p-6 flex flex-col justify-between">
@@ -270,9 +621,27 @@
                             </div>
                         </div>
 
-                        <p class="text-center text-xs text-zinc-500 dark:text-zinc-400 mb-6">
+                        <p class="text-center text-xs text-zinc-500 dark:text-zinc-400 mb-4">
                             <strong class="text-zinc-900 dark:text-zinc-100 font-bold">{{ $completedTasks }}</strong> of <strong class="text-zinc-900 dark:text-zinc-100 font-bold">{{ $totalTasks }}</strong> workspace deliverables completed.
                         </p>
+
+                        <!-- Sub-tasks Checklist Progress Bar -->
+                        @if($totalSubtasksCount > 0)
+                            <div class="mb-4 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800">
+                                <div class="flex items-center justify-between text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                                    <span class="flex items-center gap-1.5">
+                                        <flux:icon name="check-circle" class="size-3.5 text-emerald-500" />
+                                        Subtasks Deliverables
+                                    </span>
+                                    <span class="text-emerald-600 dark:text-emerald-400 font-extrabold">
+                                        {{ $completedSubtasksCount }}/{{ $totalSubtasksCount }} ({{ $subtaskProgress }}%)
+                                    </span>
+                                </div>
+                                <div class="w-full h-2 rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full" style="width: {{ $subtaskProgress }}%"></div>
+                                </div>
+                            </div>
+                        @endif
                     </div>
 
                     <!-- Priority Breakdown Bar -->
@@ -304,7 +673,7 @@
                                     <flux:icon name="chart-bar" class="size-5" />
                                 </div>
                                 <div>
-                                    <h3 class="text-base font-extrabold text-zinc-900 dark:text-zinc-100">7-Day Work Velocity</h3>
+                                    <h3 class="text-base font-extrabold text-zinc-900 dark:text-zinc-100">7-Day Work Velocity Flow</h3>
                                     <p class="text-xs text-zinc-500 dark:text-zinc-400">Created vs Resolved deliverables daily trend</p>
                                 </div>
                             </div>
@@ -356,7 +725,7 @@
                     </div>
 
                     <div class="mt-4 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                        <span>7-Day Total Activity Flow</span>
+                        <span>7-Day Total Activity Trend</span>
                         <span class="font-semibold text-zinc-700 dark:text-zinc-300">
                             Created: <strong class="text-indigo-600 dark:text-indigo-400">{{ array_sum(array_column($weeklyActivity, 'created')) }}</strong> &bull; 
                             Resolved: <strong class="text-emerald-600 dark:text-emerald-400">{{ array_sum(array_column($weeklyActivity, 'resolved')) }}</strong>
@@ -365,7 +734,7 @@
                 </flux:card>
             </div>
 
-            <!-- 4. Lower Operational Grid (Due Soon Guardian, Team Workload, Recent Tasks & Quick Actions) -->
+            <!-- 6. Lower Operational Grid (Due Soon Guardian, Team Workload, Recent Tasks & Quick Actions) -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
                 <!-- Due Soon Guardian (Tasks due in next 7 days) -->
                 <flux:card class="shadow-sm hover:shadow-md transition-shadow rounded-3xl bg-white dark:bg-zinc-900 border-zinc-200/80 dark:border-zinc-800 p-6 flex flex-col justify-between">
@@ -397,27 +766,21 @@
                                             <a href="{{ route('tasks.show', $task) }}" class="font-bold text-sm text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400 truncate block">
                                                 {{ $task->title }}
                                             </a>
-                                            <span class="text-xs text-zinc-500">Assigned: <strong class="font-semibold text-zinc-700 dark:text-zinc-300">{{ $task->assigned_to }}</strong></span>
+                                            <div class="text-[11px] text-zinc-400 mt-0.5">
+                                                <span>Assigned: <strong class="text-zinc-600 dark:text-zinc-300 font-semibold">{{ $task->assigned_to }}</strong></span>
+                                                <span class="mx-1">&bull;</span>
+                                                <span class="font-semibold text-indigo-500">{{ $task->category ?? 'Operations' }}</span>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div class="flex items-center gap-2 shrink-0">
-                                        @if($task->urgency_color === 'rose')
-                                            <span class="px-2.5 py-1 rounded-full text-[11px] font-black bg-rose-500 text-white animate-pulse shadow-xs">
-                                                {{ $task->urgency_label }}
-                                            </span>
-                                        @elseif($task->urgency_color === 'amber')
-                                            <span class="px-2.5 py-1 rounded-full text-[11px] font-black bg-amber-500 text-white shadow-xs">
-                                                {{ $task->urgency_label }}
-                                            </span>
+                                    <div class="shrink-0">
+                                        @if($task->status === 'Completed')
+                                            <flux:badge size="sm" color="emerald" icon="check">{{ $task->status }}</flux:badge>
+                                        @elseif($task->status === 'In Progress')
+                                            <flux:badge size="sm" color="cyan" icon="arrow-path">{{ $task->status }}</flux:badge>
                                         @else
-                                            <span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200/50">
-                                                {{ $task->urgency_label }}
-                                            </span>
-                                        @endif
-
-                                        @if($task->priority === 'High')
-                                            <flux:badge size="sm" color="red" icon="fire">{{ $task->priority }}</flux:badge>
+                                            <flux:badge size="sm" color="amber" icon="clock">{{ $task->status }}</flux:badge>
                                         @endif
                                     </div>
                                 </div>
@@ -565,39 +928,38 @@
                             </div>
                             <div>
                                 <h3 class="text-base font-extrabold text-zinc-900 dark:text-zinc-100">Executive Quick Launch</h3>
-                                <p class="text-xs text-zinc-500 dark:text-zinc-400">Instant workflow actions</p>
+                                <p class="text-xs text-zinc-500 dark:text-zinc-400">Instant workspace shortcuts</p>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <flux:button href="{{ route('tasks.kanban') }}" icon="view-columns" variant="primary" class="justify-start shadow-md font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-2xl py-3">
-                                Open Kanban Board
+                            <flux:button href="{{ route('tasks.kanban') }}" icon="view-columns" variant="primary" class="justify-start shadow-md font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl py-3">
+                                Drag & Drop Kanban
                             </flux:button>
-                            <flux:button href="{{ route('tasks.create') }}" icon="plus" variant="subtle" class="justify-start font-bold border border-zinc-200 dark:border-zinc-700 rounded-2xl py-3">
-                                Create New Task
+
+                            <flux:button href="{{ route('tasks.create') }}" icon="plus-circle" variant="subtle" class="justify-start font-bold border border-zinc-200 dark:border-zinc-700 rounded-xl py-3">
+                                Full Task Builder
                             </flux:button>
-                            <flux:button href="{{ route('tasks.index') }}" icon="table-cells" variant="ghost" class="justify-start font-bold rounded-2xl py-3">
-                                Task Management Table
+
+                            <flux:button href="{{ route('tasks.index', ['filter' => 'my_tasks']) }}" icon="user" variant="subtle" class="justify-start font-bold border border-zinc-200 dark:border-zinc-700 rounded-xl py-3">
+                                Assigned To Me
                             </flux:button>
+
                             @if(config('tracker.enable_task_export'))
-                                <flux:button href="{{ route('tasks.export') }}" icon="arrow-down-tray" variant="ghost" class="justify-start font-bold text-emerald-600 dark:text-emerald-400 rounded-2xl py-3">
-                                    Export Tasks (CSV)
+                                <flux:button href="{{ route('tasks.export') }}" icon="arrow-down-tray" variant="subtle" class="justify-start font-bold border border-zinc-200 dark:border-zinc-700 rounded-xl py-3">
+                                    Export CSV Report
                                 </flux:button>
                             @endif
                         </div>
                     </div>
 
-                    <div class="mt-6 pt-5 border-t border-zinc-100 dark:border-zinc-800 text-xs text-zinc-400 space-y-2">
-                        <div class="flex justify-between items-center">
-                            <span>CSV Export Capability:</span>
-                            <span class="font-bold px-2.5 py-0.5 rounded-full text-[11px] {{ config('tracker.enable_task_export') ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-zinc-100 text-zinc-600' }}">
-                                {{ config('tracker.enable_task_export') ? 'Active & Enabled' : 'Disabled' }}
-                            </span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span>Pagination Threshold:</span>
-                            <span class="font-bold text-zinc-700 dark:text-zinc-300">{{ config('tracker.tasks_per_page', 10) }} items / page</span>
-                        </div>
+
+                    <div class="mt-5 pt-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-400">
+                        <span>Pagination: <strong class="text-zinc-600 dark:text-zinc-300">{{ config('tracker.tasks_per_page', 10) }}/page</strong></span>
+                        <span class="font-bold text-emerald-500 flex items-center gap-1">
+                            <span class="size-2 rounded-full bg-emerald-500 animate-ping"></span>
+                            Live Sync Active
+                        </span>
                     </div>
                 </flux:card>
             </div>
@@ -606,3 +968,4 @@
         <x-footer />
     </flux:main>
 </x-layouts::app>
+
