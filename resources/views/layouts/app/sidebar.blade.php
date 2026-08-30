@@ -30,8 +30,7 @@
             <flux:spacer />
 
             <!-- Mode / Theme Controller in Sidebar -->
-            <div class="px-3 py-2 border-t border-zinc-200/60 dark:border-zinc-800/80 rounded-2xl bg-white dark:bg-zinc-800/40 mb-3 flex items-center justify-between">
-                <span class="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Theme</span>
+            <div class="px-2 py-2 border-t border-zinc-200/60 dark:border-zinc-800/80 rounded-2xl bg-white dark:bg-zinc-800/40 mb-3 flex items-center justify-center">
                 <x-theme-view-controller />
             </div>
 
