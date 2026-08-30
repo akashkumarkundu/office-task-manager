@@ -6,6 +6,9 @@
                 <flux:button href="{{ route('tasks.index') }}" variant="ghost" icon="arrow-left">
                     Back to Task List
                 </flux:button>
+                <flux:button href="{{ route('tasks.kanban') }}" variant="ghost" icon="view-columns">
+                    Kanban View
+                </flux:button>
             </div>
 
             <div class="flex items-center gap-3">
@@ -24,7 +27,7 @@
 
         <!-- Visual Task Progress Indicator (Pending -> In Progress -> Completed) -->
         <flux:card class="mb-8 p-6 shadow-sm rounded-2xl border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-            <div class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-6">Workflow Progress</div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-6">Workflow Stage</div>
             
             <div class="grid grid-cols-3 gap-2 sm:gap-4 relative">
                 <!-- Progress Line Background -->
@@ -48,7 +51,6 @@
                     <span class="mt-2.5 text-xs sm:text-sm font-semibold {{ $task->status === 'Pending' ? 'text-amber-600 dark:text-amber-400 font-bold' : 'text-zinc-700 dark:text-zinc-300' }}">
                         Pending
                     </span>
-                    <span class="text-[11px] text-zinc-400 hidden sm:block">Waiting for start</span>
                 </div>
 
                 <!-- Step 2: In Progress -->
@@ -63,7 +65,6 @@
                     <span class="mt-2.5 text-xs sm:text-sm font-semibold {{ $task->status === 'In Progress' ? 'text-sky-600 dark:text-sky-400 font-bold' : ($isInProgressActive ? 'text-zinc-700 dark:text-zinc-300' : 'text-zinc-400') }}">
                         In Progress
                     </span>
-                    <span class="text-[11px] text-zinc-400 hidden sm:block">Under active work</span>
                 </div>
 
                 <!-- Step 3: Completed -->
@@ -74,24 +75,28 @@
                     <span class="mt-2.5 text-xs sm:text-sm font-semibold {{ $isCompletedActive ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-zinc-400' }}">
                         Completed
                     </span>
-                    <span class="text-[11px] text-zinc-400 hidden sm:block">Successfully finished</span>
                 </div>
             </div>
         </flux:card>
 
         <!-- Main Content Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Left 2 Cols: Task Title & Formatted Description Card -->
+            <!-- Left 2 Cols: Task Details, Checklist, & Discussions -->
             <div class="lg:col-span-2 space-y-6">
+                <!-- Task Primary Information Card -->
                 <flux:card class="shadow-sm rounded-2xl border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 sm:p-8">
-                    <!-- Overdue Banner / Badge -->
+                    <!-- Badges Row -->
                     <div class="flex items-center gap-2 mb-4 flex-wrap">
                         @if($task->is_overdue)
                             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800 animate-pulse">
                                 <flux:icon name="exclamation-triangle" class="size-3.5" />
-                                OVERDUE
+                                OVERDUE ({{ $task->days_overdue }} days)
                             </span>
                         @endif
+
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60">
+                            {{ $task->category ?? 'Operations' }}
+                        </span>
 
                         @if($task->priority === 'High')
                             <flux:badge size="sm" color="red" icon="fire">{{ $task->priority }} Priority</flux:badge>
@@ -118,14 +123,152 @@
                         <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-3">
                             Description & Notes
                         </label>
-                        <div class="text-zinc-700 dark:text-zinc-300 text-sm leading-relaxed bg-zinc-50/70 dark:bg-zinc-800/40 p-5 sm:p-6 rounded-2xl border border-zinc-100 dark:border-zinc-800 whitespace-pre-line min-h-[140px]">
+                        <div class="text-zinc-700 dark:text-zinc-300 text-sm leading-relaxed bg-zinc-50/70 dark:bg-zinc-800/40 p-5 sm:p-6 rounded-2xl border border-zinc-100 dark:border-zinc-800 whitespace-pre-line min-h-[100px]">
                             {{ $task->description ?: 'No additional description provided for this task.' }}
                         </div>
                     </div>
                 </flux:card>
+
+                <!-- Sub-tasks / Deliverables Checklist Card -->
+                <flux:card class="shadow-sm rounded-2xl border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 sm:p-8">
+                    <div class="flex items-center justify-between gap-4 mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <span class="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+                                <flux:icon name="clipboard-document-check" class="size-5" />
+                            </span>
+                            <div>
+                                <flux:heading size="lg" level="2" class="font-bold text-zinc-900 dark:text-zinc-100">
+                                    Sub-tasks & Deliverables Checklist
+                                </flux:heading>
+                                <flux:subheading size="sm">
+                                    Breakdown of deliverables required for completing this task.
+                                </flux:subheading>
+                            </div>
+                        </div>
+
+                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                            {{ $task->completed_items_count }} / {{ $task->total_items_count }} Completed ({{ $task->checklist_progress }}%)
+                        </span>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="w-full h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden mb-6">
+                        <div class="h-full bg-emerald-500 rounded-full transition-all duration-300" style="width: {{ $task->checklist_progress }}%"></div>
+                    </div>
+
+                    <!-- Checklist Items List -->
+                    <div class="space-y-2.5 mb-6">
+                        @forelse($task->items as $item)
+                            <div class="flex items-center justify-between p-3.5 rounded-xl border border-zinc-200/80 dark:border-zinc-700/80 bg-zinc-50/50 dark:bg-zinc-800/50 hover:bg-white dark:hover:bg-zinc-800 transition-colors">
+                                <form action="{{ route('tasks.items.toggle', $item) }}" method="POST" class="flex items-center gap-3 flex-1">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="size-5 rounded-md border flex items-center justify-center transition-colors {{ $item->is_completed ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 hover:border-emerald-500' }}">
+                                        @if($item->is_completed)
+                                            <flux:icon name="check" class="size-3.5 stroke-[3]" />
+                                        @endif
+                                    </button>
+                                    <span class="text-sm {{ $item->is_completed ? 'line-through text-zinc-400 dark:text-zinc-500' : 'text-zinc-800 dark:text-zinc-200 font-medium' }}">
+                                        {{ $item->title }}
+                                    </span>
+                                </form>
+
+                                <form action="{{ route('tasks.items.destroy', $item) }}" method="POST" onsubmit="return confirm('Delete this checklist item?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 p-1 transition-colors" title="Delete item">
+                                        <flux:icon name="x-mark" class="size-4" />
+                                    </button>
+                                </form>
+                            </div>
+                        @empty
+                            <div class="text-center py-6 text-zinc-400 bg-zinc-50/50 dark:bg-zinc-800/30 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800 text-xs">
+                                No checklist items added yet. Add steps below to track sub-deliverables!
+                            </div>
+                        @endforelse
+                    </div>
+
+                    <!-- Add New Checklist Item Form -->
+                    <form action="{{ route('tasks.items.store', $task) }}" method="POST" class="flex items-center gap-2">
+                        @csrf
+                        <flux:input name="title" placeholder="Add a new deliverable step (e.g. Prepare design drafts)..." required class="flex-1" />
+                        <flux:button type="submit" variant="primary" icon="plus" size="sm">
+                            Add Step
+                        </flux:button>
+                    </form>
+                </flux:card>
+
+                <!-- Discussion & Comments Feed Card -->
+                <flux:card class="shadow-sm rounded-2xl border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 sm:p-8">
+                    <div class="flex items-center gap-2.5 mb-6">
+                        <span class="p-1.5 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400">
+                            <flux:icon name="chat-bubble-left-right" class="size-5" />
+                        </span>
+                        <div>
+                            <flux:heading size="lg" level="2" class="font-bold text-zinc-900 dark:text-zinc-100">
+                                Team Discussion & Progress Notes
+                            </flux:heading>
+                            <flux:subheading size="sm">
+                                Real-time activity logs and collaboration thread.
+                            </flux:subheading>
+                        </div>
+                    </div>
+
+                    <!-- New Comment Submission Form -->
+                    <form action="{{ route('tasks.comments.store', $task) }}" method="POST" class="mb-8">
+                        @csrf
+                        <flux:textarea name="comment" placeholder="Write an update, note, or reply for team members..." rows="3" required class="mb-3" />
+                        <div class="flex justify-end">
+                            <flux:button type="submit" variant="primary" icon="paper-airplane" size="sm">
+                                Post Update
+                            </flux:button>
+                        </div>
+                    </form>
+
+                    <!-- Comments Stream -->
+                    <div class="space-y-4">
+                        @forelse($task->comments as $comment)
+                            <div class="p-4 rounded-2xl border border-zinc-200/70 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/40">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="size-7 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 flex items-center justify-center font-bold text-xs">
+                                            {{ $comment->user ? $comment->user->initials() : 'U' }}
+                                        </div>
+                                        <div>
+                                            <span class="font-semibold text-xs text-zinc-900 dark:text-zinc-100">
+                                                {{ $comment->user ? $comment->user->name : 'Team Member' }}
+                                            </span>
+                                            <span class="text-[11px] text-zinc-400 ml-1.5">
+                                                {{ $comment->created_at->diffForHumans() }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    @if(auth()->check() && auth()->id() === $comment->user_id)
+                                        <form action="{{ route('tasks.comments.destroy', $comment) }}" method="POST" onsubmit="return confirm('Delete your comment?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 p-1 text-xs" title="Delete comment">
+                                                <flux:icon name="trash" class="size-3.5" />
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+
+                                <div class="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line pl-9">
+                                    {{ $comment->comment }}
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-8 text-zinc-400 bg-zinc-50/30 dark:bg-zinc-800/20 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800 text-xs">
+                                No comments or discussion notes yet. Start the conversation above!
+                            </div>
+                        @endforelse
+                    </div>
+                </flux:card>
             </div>
 
-            <!-- Right 1 Col: Metadata & Audit Timeline Sidebar -->
+            <!-- Right 1 Col: Metadata Sidebar -->
             <div class="space-y-6">
                 <!-- Metadata Card -->
                 <flux:card class="shadow-sm rounded-2xl border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
@@ -134,16 +277,28 @@
                     <div class="space-y-5 text-sm">
                         <!-- Assigned To -->
                         <div>
-                            <span class="text-xs text-zinc-500 dark:text-zinc-400 block mb-1.5">Assigned To</span>
+                            <span class="text-xs text-zinc-500 dark:text-zinc-400 block mb-1.5">Assigned Responsible</span>
                             <div class="flex items-center gap-3">
                                 <div class="size-9 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 flex items-center justify-center font-bold text-xs">
                                     {{ strtoupper(substr($task->assigned_to, 0, 2)) }}
                                 </div>
                                 <div>
                                     <div class="font-semibold text-zinc-900 dark:text-zinc-100">{{ $task->assigned_to }}</div>
-                                    <div class="text-[11px] text-zinc-400">Team Member</div>
+                                    @if($task->assignedUser)
+                                        <div class="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">Registered User ({{ $task->assignedUser->email }})</div>
+                                    @else
+                                        <div class="text-[11px] text-zinc-400">Team Member</div>
+                                    @endif
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Department / Category -->
+                        <div class="border-t border-zinc-100 dark:border-zinc-800 pt-4">
+                            <span class="text-xs text-zinc-500 dark:text-zinc-400 block mb-1.5">Department / Category</span>
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200">
+                                {{ $task->category ?? 'Operations' }}
+                            </span>
                         </div>
 
                         <!-- Due Date -->
@@ -196,7 +351,7 @@
                 </div>
 
                 <p class="text-sm text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/60 p-3.5 rounded-xl border border-zinc-200/60 dark:border-zinc-700/60">
-                    <strong>"{{ $task->title }}"</strong> will be permanently removed. This action cannot be undone.
+                    <strong>"{{ $task->title }}"</strong> and all associated checklist items & discussion comments will be permanently removed.
                 </p>
 
                 <div class="flex justify-end gap-3">

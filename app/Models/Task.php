@@ -8,17 +8,24 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
  * @property string $title
  * @property string|null $description
  * @property string|null $assigned_to
+ * @property int|null $assigned_user_id
  * @property string $priority
+ * @property string $category
  * @property string $status
  * @property string|Carbon|null $due_date
  * @property-read bool $is_overdue
  * @property-read int $days_overdue
+ * @property-read int $checklist_progress
+ * @property-read int $completed_items_count
+ * @property-read int $total_items_count
  * @property string|null $urgency_label
  * @property string|null $urgency_color
  * @property float|int|null $percentage
@@ -43,10 +50,42 @@ class Task extends Model
         'title',
         'description',
         'assigned_to',
+        'assigned_user_id',
         'priority',
+        'category',
         'status',
         'due_date',
     ];
+
+    /**
+     * Subtask checklist items.
+     *
+     * @return HasMany<TaskItem, $this>
+     */
+    public function items(): HasMany
+    {
+        return $this->hasMany(TaskItem::class);
+    }
+
+    /**
+     * Discussion comments.
+     *
+     * @return HasMany<TaskComment, $this>
+     */
+    public function comments(): HasMany
+    {
+        return $this->hasMany(TaskComment::class)->latest();
+    }
+
+    /**
+     * Optional registered user assignment.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function assignedUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_user_id');
+    }
 
     /**
      * Scope a query to only include overdue tasks.
@@ -103,6 +142,50 @@ class Task extends Model
             get: fn () => (bool) $this->getAttribute('is_overdue')
                 ? max(1, (int) Carbon::parse($this->due_date)->diffInDays(Carbon::today()))
                 : 0,
+        );
+    }
+
+    /**
+     * Checklist completion percentage (0 - 100).
+     */
+    protected function checklistProgress(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $total = $this->relationLoaded('items') ? $this->items->count() : $this->items()->count();
+                if ($total === 0) {
+                    return 0;
+                }
+                $completed = $this->relationLoaded('items')
+                    ? $this->items->where('is_completed', true)->count()
+                    : $this->items()->where('is_completed', true)->count();
+
+                return (int) round(($completed / $total) * 100);
+            }
+        );
+    }
+
+    /**
+     * Count of completed checklist items.
+     */
+    protected function completedItemsCount(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->relationLoaded('items')
+                ? $this->items->where('is_completed', true)->count()
+                : $this->items()->where('is_completed', true)->count()
+        );
+    }
+
+    /**
+     * Count of total checklist items.
+     */
+    protected function totalItemsCount(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->relationLoaded('items')
+                ? $this->items->count()
+                : $this->items()->count()
         );
     }
 }
