@@ -32,8 +32,8 @@
 
                 <!-- Right Action Buttons + Theme & Brightness Controller -->
                 <div class="flex items-center gap-2 sm:gap-3 shrink-0">
-                    <!-- Brightness & Dark Theme / Screen Controller -->
-                    <div class="hidden sm:block">
+                    <!-- Brightness & Dark Theme / Screen Controller Dropdowns -->
+                    <div class="flex items-center">
                         <x-theme-view-controller />
                     </div>
 
@@ -366,11 +366,6 @@
                 </div>
             </div>
         </footer>
-
-        <!-- 6. Floating Persistent Quick Switcher (Always accessible on screen) -->
-        <aside aria-label="Screen View and Theme Switcher" class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[100] p-1.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-300 dark:border-blue-500/50 shadow-2xl shadow-black/50 flex items-center gap-2">
-            <x-theme-view-controller />
-        </aside>
 
         @fluxScripts
     </body>
